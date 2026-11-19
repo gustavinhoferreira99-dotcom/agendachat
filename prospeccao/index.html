@@ -109,6 +109,8 @@ function phoneInfo(p){let d=digits(p);if(!d)return{ok:false,fixo:false,wa:''};if
 function fmtPhone(p){const i=phoneInfo(p);if(!i.ok)return'sem telefone';const d=i.wa.slice(2);return'('+d.slice(0,2)+') '+d.slice(2,-4)+'-'+d.slice(-4)}
 function today(){const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)}
 function addDays(n){const d=new Date();d.setDate(d.getDate()+n);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)}
+const IMGS=[['beneficios','Imagem: benefícios','Olha o resumo do AgendaChat 👇'],['planos','Imagem: planos e valores','Valores e planos do AgendaChat 👇']];
+const imgUrl=k=>location.origin+location.pathname.replace(/[^/]*$/,'')+'img/'+k+'.jpg';
 function fill(t,l){const video=(tpl.video_curto&&tpl.video_curto.body)||'';return String(t||'').replace(/\{nome\}/g,l.name).replace(/\{video\}/g,video.trim())}
 function waLink(l,text){const i=phoneInfo(l.phone);return'https://wa.me/'+i.wa+'?text='+encodeURIComponent(text)}
 function mapsLink(l){return'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(l.name+' '+(l.address||'')+' '+l.city)}
@@ -195,6 +197,9 @@ function rModelos(){
   const keys=['abordagem','video','retorno','video_curto','video_longo'];
   $('#v-modelos').innerHTML=`<h2>Mensagens e vídeos</h2><p class="note">Use <b>{nome}</b> para o nome da barbearia e <b>{video}</b> para o link do vídeo curto. As alterações valem para todas as barbearias.</p>`+
   keys.filter(k=>tpl[k]).map(k=>`<div class="card"><b>${esc(tpl[k].title)}</b><textarea data-k="${k}" style="min-height:${k.startsWith('video_')?'60px':'130px'};margin-top:8px">${esc(tpl[k].body)}</textarea><div class="row" style="margin-top:8px"><button class="btn sm" data-s="${k}">Salvar</button>${k.startsWith('video_')?`<button class="btn ghost sm" data-c="${k}">Copiar link</button>`:''}</div></div>`).join('');
+  $('#v-modelos').insertAdjacentHTML('beforeend',`<h2>Imagens</h2><p class="note">Para enviar a uma barbearia, abra ela na lista e toque no botão da imagem. Aqui você pode ver, copiar o link, baixar ou compartilhar.</p>`+IMGS.map(([k,t])=>`<div class="card"><b>${t}</b><img src="img/${k}.jpg" alt="${t}" style="display:block;width:100%;max-width:320px;border-radius:12px;margin:8px 0"><div class="row"><button class="btn ghost sm" data-ic="${k}">Copiar link</button><a class="btn ghost sm" style="text-decoration:none" href="img/${k}.jpg" download="agendachat-${k}.jpg">Baixar</a><button class="btn sm" data-is="${k}">Compartilhar</button></div></div>`).join(''));
+  document.querySelectorAll('[data-ic]').forEach(b=>b.onclick=async()=>{try{await navigator.clipboard.writeText(imgUrl(b.dataset.ic));toast('Link copiado')}catch(_){toast('Não consegui copiar.')}});
+  document.querySelectorAll('[data-is]').forEach(b=>b.onclick=async()=>{const k=b.dataset.is;try{const bl=await (await fetch('img/'+k+'.jpg')).blob();const f=new File([bl],'agendachat-'+k+'.jpg',{type:'image/jpeg'});if(navigator.canShare&&navigator.canShare({files:[f]}))await navigator.share({files:[f]});else{await navigator.clipboard.writeText(imgUrl(k));toast('Neste aparelho não dá para compartilhar o arquivo. Link copiado.')}}catch(e){if(e&&e.name!=='AbortError')toast('Não consegui compartilhar.')}});
   document.querySelectorAll('[data-s]').forEach(b=>b.onclick=async()=>{const k=b.dataset.s;const v=document.querySelector(`textarea[data-k=${k}]`).value;const {error}=await sb.from('pr_templates').update({body:v}).eq('key',k);if(error)return toast('Erro: '+error.message);tpl[k].body=v;toast('Salvo')});
   document.querySelectorAll('[data-c]').forEach(b=>b.onclick=async()=>{try{await navigator.clipboard.writeText(document.querySelector(`textarea[data-k=${b.dataset.c}]`).value.trim());toast('Link copiado')}catch(_){toast('Não consegui copiar; selecione e copie.')}})}
 // ---------- detalhe ----------
@@ -206,6 +211,7 @@ function openSheet(l){
   $('#sheet-in').innerHTML=`<div class="row"><div class="grow"><h3 style="margin:0">${esc(l.name)}</h3><div class="meta">${esc(l.address||'')} · ${esc(l.neighborhood||'')} · ${esc(l.city)}</div></div><button class="btn ghost sm" id="x">Fechar</button></div>
    <div class="meta" style="margin:6px 0">⭐ ${l.rating||'-'} (${l.rating_count||0}) · ${esc(fmtPhone(l.phone))}${i.fixo?' · fixo':''}</div>
    <h2>Mensagens</h2><div class="row">${m.map(([k,t])=>`<button class="btn wa sm" data-m="${k}" ${ok?'':'disabled'}>${t}</button>`).join('')}</div>
+   <div class="row" style="margin-top:8px">${IMGS.map(([k,t])=>`<button class="btn ghost sm" data-i="${k}" ${ok?'':'disabled'}>${t}</button>`).join('')}</div>
    <div class="row" style="margin-top:8px"><button class="btn ghost sm" data-m="video_longo" ${ok?'':'disabled'}>Enviar vídeo completo (35 s)</button>${l.phone?`<a class="btn ghost sm" style="text-decoration:none" href="tel:+${esc(i.wa)}">Ligar</a>`:''}<a class="btn ghost sm" style="text-decoration:none" target="_blank" rel="noopener" href="${mapsLink(l)}">Ver no mapa</a></div>
    <h2>Status</h2><div class="chips">${STATUS.map(([k,v])=>`<button class="chip ${l.status===k?'on':''}" data-st="${k}">${v}</button>`).join('')}</div>
    <label>Retorno em</label><input type="date" id="nx" value="${esc(l.next_contact||'')}">
@@ -222,6 +228,11 @@ function openSheet(l){
     else if(k.startsWith('video')){await patch(l,{status:'video_enviado',last_contact:new Date().toISOString(),next_contact:addDays(3)},'video_enviado')}
     else if(k==='retorno'){await patch(l,{last_contact:new Date().toISOString(),next_contact:addDays(4)},'retorno_enviado')}
     toast('WhatsApp aberto. Status atualizado.');render();openSheet(l)});
+  document.querySelectorAll('[data-i]').forEach(b=>b.onclick=async()=>{
+    const im=IMGS.find(x=>x[0]===b.dataset.i);
+    window.open(waLink(l,'Oi, '+l.name+'! '+im[2]+'\n'+imgUrl(im[0])),'_blank');
+    await patch(l,{last_contact:new Date().toISOString(),next_contact:addDays(3)},'imagem_enviada');
+    toast('WhatsApp aberto com o link da imagem.');render();openSheet(l)});
   document.querySelectorAll('[data-st]').forEach(b=>b.onclick=async()=>{
     const st=b.dataset.st;const f={status:st};if(st==='sem_interesse'||st==='fechou')f.next_contact=null;
     if(await patch(l,f,st)){render();openSheet(l)}});
