@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#18245a">
+<meta name="robots" content="noindex,nofollow">
+<title>Prospecção AgendaChat</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Prospecção">
+<style>
+:root{--bg:#f3f4f8;--card:#fff;--ink:#1b1f2e;--mute:#667085;--line:#e3e6ef;--navy:#18245a;--coral:#ff6b73;--green:#1fa855;--red:#c0392b;--amber:#c27b00}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1220;--card:#181c30;--ink:#eef0f8;--mute:#9aa3bd;--line:#2a3050}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:84px}
+header{background:linear-gradient(135deg,#18245a,#5f202b);color:#fff;padding:calc(env(safe-area-inset-top) + 14px) 16px 14px;position:sticky;top:0;z-index:5}
+header h1{margin:0;font-size:18px}header small{opacity:.8}
+.wrap{max-width:760px;margin:0 auto;padding:12px 16px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+input,select,textarea,button{font:inherit}
+input,select,textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink)}
+textarea{min-height:120px;resize:vertical}
+.filters{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0 12px}
+.filters .full{grid-column:1/-1}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px}
+.card h3{margin:0 0 2px;font-size:17px}
+.meta{color:var(--mute);font-size:14px}
+.badge{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;font-weight:600;background:#e8ebf7;color:#27336e}
+.b-nova{background:#e8ebf7;color:#27336e}.b-mensagem_enviada{background:#fff3d6;color:#8a5b00}.b-respondeu{background:#dff3ff;color:#06577d}
+.b-video_enviado{background:#e5ddff;color:#4a2aa8}.b-demonstracao{background:#d9f5e3;color:#116b37}.b-fechou{background:#1fa855;color:#fff}.b-sem_interesse{background:#f6dcd9;color:#8c2217}
+.btn{border:0;border-radius:11px;padding:12px 14px;font-weight:700;cursor:pointer;background:var(--navy);color:#fff}
+.btn.wa{background:var(--green)}.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}.btn.red{background:var(--red)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.sm{padding:8px 11px;font-size:14px}
+.grow{flex:1}
+nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom);z-index:6}
+nav button{flex:1;background:none;border:0;padding:12px 4px;color:var(--mute);font-weight:600;font-size:13px;cursor:pointer}
+nav button.on{color:var(--coral)}
+nav button span{display:block;font-size:20px}
+.sheet{position:fixed;inset:0;background:rgba(10,12,24,.6);z-index:10;display:none;align-items:flex-end;justify-content:center}
+.sheet.on{display:flex}
+.sheet .in{background:var(--bg);width:100%;max-width:760px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom))}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px}
+.stat b{font-size:26px;display:block}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.chip{padding:8px 11px;border-radius:99px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:13px;font-weight:600;cursor:pointer}
+.chip.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:#111;color:#fff;padding:10px 16px;border-radius:99px;font-size:14px;z-index:20;opacity:0;transition:.25s;pointer-events:none;max-width:90vw}
+.toast.on{opacity:1}
+.empty{text-align:center;color:var(--mute);padding:36px 12px}
+label{display:block;font-size:13px;font-weight:600;color:var(--mute);margin:10px 0 4px}
+.hide{display:none!important}
+#login{max-width:380px;margin:12vh auto;padding:0 20px}
+.note{font-size:13px;color:var(--mute)}
+h2{font-size:17px;margin:14px 0 6px}
+.bar{height:10px;background:var(--line);border-radius:99px;overflow:hidden;margin:4px 0 10px}.bar i{display:block;height:100%;background:var(--coral)}
+</style>
+</head>
+<body>
+<div id="login" class="hide">
+  <h1>Prospecção AgendaChat</h1>
+  <p class="note">Entre com o mesmo e-mail e senha de administrador do AgendaChat.</p>
+  <label>E-mail</label><input id="lg-e" type="email" autocomplete="username">
+  <label>Senha</label><input id="lg-p" type="password" autocomplete="current-password">
+  <p><button class="btn grow" style="width:100%" id="lg-b">Entrar</button></p>
+  <p class="note" id="lg-m"></p>
+</div>
+
+<div id="app" class="hide">
+  <header><div class="row"><div class="grow"><h1>Prospecção AgendaChat</h1><small id="sub"></small></div><button class="btn ghost sm" id="sair" style="color:#fff;border-color:#ffffff55">Sair</button></div></header>
+  <main class="wrap">
+    <section id="v-hoje"></section>
+    <section id="v-lista" class="hide"></section>
+    <section id="v-funil" class="hide"></section>
+    <section id="v-modelos" class="hide"></section>
+  </main>
+  <nav>
+    <button data-v="hoje" class="on"><span>📅</span>Hoje</button>
+    <button data-v="lista"><span>📋</span>Lista</button>
+    <button data-v="funil"><span>📊</span>Funil</button>
+    <button data-v="modelos"><span>✉️</span>Modelos</button>
+  </nav>
+</div>
+
+<div class="sheet" id="sheet"><div class="in" id="sheet-in"></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+const SUPA_URL='https://cdejbtrdfogzerqwjplz.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkZWpidHJkZm9nemVycXdqcGx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQzNDYyOTMsImV4cCI6MjEwOTkyMjI5M30.Is33t606jezuVU9mgQalsWlAWWmCteXsUuA1gRQvdQc';
+const ADMIN='gustavinhoferreira99@gmail.com';
+const STATUS=[['nova','Nova'],['mensagem_enviada','Mensagem enviada'],['respondeu','Respondeu'],['video_enviado','Vídeo enviado'],['demonstracao','Demonstração'],['fechou','Fechou'],['sem_interesse','Sem interesse']];
+const SN=Object.fromEntries(STATUS);
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const sb=window.supabase.createClient(SUPA_URL,SUPA_KEY);
+let leads=[],tpl={},view='hoje',F={city:'',status:'',q:'',sort:'asc',mobile:false,hideNo:true};
+try{Object.assign(F,JSON.parse(localStorage.getItem('pr_f')||'{}'))}catch(_){}
+const saveF=()=>{try{localStorage.setItem('pr_f',JSON.stringify(F))}catch(_){}};
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2600)}
+function digits(p){return String(p||'').replace(/\D/g,'')}
+function phoneInfo(p){let d=digits(p);if(!d)return{ok:false,fixo:false,wa:''};if(d.startsWith('55')&&d.length>=12)d=d.slice(2);
+  const n=d.slice(2);const fixo=n.length===8&&/^[2-5]/.test(n);return{ok:d.length>=10,fixo,wa:'55'+d}}
+function fmtPhone(p){const i=phoneInfo(p);if(!i.ok)return'sem telefone';const d=i.wa.slice(2);return'('+d.slice(0,2)+') '+d.slice(2,-4)+'-'+d.slice(-4)}
+function today(){const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)}
+function addDays(n){const d=new Date();d.setDate(d.getDate()+n);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)}
+function fill(t,l){const video=(tpl.video_curto&&tpl.video_curto.body)||'';return String(t||'').replace(/\{nome\}/g,l.name).replace(/\{video\}/g,video.trim())}
+function waLink(l,text){const i=phoneInfo(l.phone);return'https://wa.me/'+i.wa+'?text='+encodeURIComponent(text)}
+function mapsLink(l){return'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(l.name+' '+(l.address||'')+' '+l.city)}
+
+// ---------- dados ----------
+async function load(){
+  const [a,b]=await Promise.all([sb.from('pr_leads').select('*').order('rating_count',{ascending:true}).limit(2000),sb.from('pr_templates').select('*').order('sort')]);
+  if(a.error){toast('Erro ao carregar: '+a.error.message);return}
+  leads=a.data||[];tpl={};(b.data||[]).forEach(t=>tpl[t.key]=t);render()
+}
+async function patch(l,fields,ev){
+  const {error}=await sb.from('pr_leads').update(fields).eq('id',l.id);
+  if(error){toast('Não salvou: '+error.message);return false}
+  Object.assign(l,fields);
+  if(ev)await sb.from('pr_events').insert({lead_id:l.id,kind:ev});
+  return true
+}
+// ---------- render ----------
+function render(){
+  $('#sub').textContent=leads.length+' barbearias · '+new Set(leads.map(l=>l.city)).size+' cidades';
+  ({hoje:rHoje,lista:rLista,funil:rFunil,modelos:rModelos})[view]();
+}
+function leadCard(l){
+  const i=phoneInfo(l.phone);
+  return `<div class="card" data-id="${esc(l.id)}">
+   <div class="row"><div class="grow"><h3>${esc(l.name)}</h3><div class="meta">${esc(l.neighborhood||'')} · ${esc(l.city)} · ⭐ ${l.rating||'-'} (${l.rating_count||0})</div></div><span class="badge b-${esc(l.status)}">${esc(SN[l.status])}</span></div>
+   <div class="meta" style="margin:6px 0">${esc(fmtPhone(l.phone))}${i.fixo?' · <b style="color:var(--amber)">telefone fixo</b>':''}${l.next_contact?' · retorno '+esc(l.next_contact.split('-').reverse().join('/')):''}</div>
+   <div class="row"><button class="btn wa grow" data-a="wa" ${(!i.ok||i.fixo)?'disabled':''}>Chamar no WhatsApp</button><button class="btn ghost" data-a="open">Detalhes</button></div>
+  </div>`}
+function bindCards(root){root.querySelectorAll('.card[data-id]').forEach(c=>{
+  const l=leads.find(x=>x.id===c.dataset.id);
+  c.querySelector('[data-a=wa]').onclick=()=>sendFirst(l);
+  c.querySelector('[data-a=open]').onclick=()=>openSheet(l)})}
+async function sendFirst(l){
+  const text=fill((tpl.abordagem||{}).body,l);
+  window.open(waLink(l,text),'_blank');
+  if(l.status==='nova'){await patch(l,{status:'mensagem_enviada',last_contact:new Date().toISOString(),next_contact:addDays(3)},'mensagem_enviada');toast('Marcada como "Mensagem enviada". Retorno em 3 dias.');render()}
+}
+function rHoje(){
+  const t=today();
+  const due=leads.filter(l=>l.next_contact&&l.next_contact<=t&&!['fechou','sem_interesse'].includes(l.status));
+  const novas=leads.filter(l=>l.status==='nova'&&phoneInfo(l.phone).ok&&!phoneInfo(l.phone).fixo).sort((a,b)=>(a.rating_count||0)-(b.rating_count||0)).slice(0,10);
+  const el=$('#v-hoje');
+  el.innerHTML=`<h2>Retornos de hoje (${due.length})</h2>${due.length?due.map(leadCard).join(''):'<div class="empty">Nenhum retorno para hoje.</div>'}
+  <h2>10 para começar (as menores primeiro)</h2><p class="note">Barbearias novas, com celular e menos avaliações. Um toque abre o WhatsApp com a mensagem pronta.</p>${novas.length?novas.map(leadCard).join(''):'<div class="empty">Sem barbearias novas. Veja a aba Lista.</div>'}`;
+  bindCards(el)}
+function filtered(){
+  let r=leads.filter(l=>(!F.city||l.city===F.city)&&(!F.status||l.status===F.status)&&(!F.hideNo||l.status!=='sem_interesse'||F.status==='sem_interesse')&&(!F.mobile||(phoneInfo(l.phone).ok&&!phoneInfo(l.phone).fixo)));
+  const q=F.q.trim().toLowerCase();if(q)r=r.filter(l=>(l.name+' '+(l.neighborhood||'')+' '+(l.address||'')).toLowerCase().includes(q));
+  r.sort((a,b)=>F.sort==='asc'?(a.rating_count||0)-(b.rating_count||0):(b.rating_count||0)-(a.rating_count||0));return r}
+function rLista(){
+  const cities=[...new Set(leads.map(l=>l.city))].sort();
+  const el=$('#v-lista');
+  el.innerHTML=`<div class="filters">
+   <input class="full" id="f-q" placeholder="Buscar por nome ou bairro" value="${esc(F.q)}">
+   <select id="f-c"><option value="">Todas as cidades</option>${cities.map(c=>`<option ${F.city===c?'selected':''}>${esc(c)}</option>`).join('')}</select>
+   <select id="f-s"><option value="">Todos os status</option>${STATUS.map(([k,v])=>`<option value="${k}" ${F.status===k?'selected':''}>${v}</option>`).join('')}</select>
+   <select id="f-o"><option value="asc" ${F.sort==='asc'?'selected':''}>Menos avaliações primeiro</option><option value="desc" ${F.sort==='desc'?'selected':''}>Mais avaliações primeiro</option></select>
+   <button class="btn ghost" id="f-m">${F.mobile?'✓ ':''}Só celular</button>
+   <button class="btn" id="f-add">+ Adicionar barbearia</button>
+  </div><div id="lst"></div>`;
+  const draw=()=>{const r=filtered();$('#lst').innerHTML=(r.length?`<p class="note">${r.length} resultado(s)</p>`+r.map(leadCard).join(''):'<div class="empty">Nada encontrado.</div>');bindCards($('#lst'))};
+  $('#f-q').oninput=e=>{F.q=e.target.value;saveF();draw()};
+  $('#f-c').onchange=e=>{F.city=e.target.value;saveF();draw()};
+  $('#f-s').onchange=e=>{F.status=e.target.value;saveF();draw()};
+  $('#f-o').onchange=e=>{F.sort=e.target.value;saveF();draw()};
+  $('#f-m').onclick=()=>{F.mobile=!F.mobile;saveF();rLista()};
+  $('#f-add').onclick=addForm;draw()}
+function rFunil(){
+  const cnt=Object.fromEntries(STATUS.map(([k])=>[k,leads.filter(l=>l.status===k).length]));
+  const contacted=leads.length-cnt.nova;
+  const replied=cnt.respondeu+cnt.video_enviado+cnt.demonstracao+cnt.fechou;
+  const demo=cnt.demonstracao+cnt.fechou;
+  const pct=(a,b)=>b?Math.round(a*100/b)+'%':'-';
+  const max=Math.max(1,...Object.values(cnt));
+  const cities=[...new Set(leads.map(l=>l.city))].sort();
+  $('#v-funil').innerHTML=`<h2>Funil</h2><div class="stats">
+   <div class="stat"><b>${contacted}</b>contatadas</div><div class="stat"><b>${replied}</b>responderam (${pct(replied,contacted)})</div>
+   <div class="stat"><b>${demo}</b>demonstrações (${pct(demo,replied)} das que responderam)</div><div class="stat"><b>${cnt.fechou}</b>fecharam (${pct(cnt.fechou,contacted)} das contatadas)</div></div>
+   <h2>Por status</h2>${STATUS.map(([k,v])=>`<div class="row"><span class="grow">${v}</span><b>${cnt[k]}</b></div><div class="bar"><i style="width:${cnt[k]*100/max}%"></i></div>`).join('')}
+   <h2>Por cidade</h2>${cities.map(c=>{const a=leads.filter(l=>l.city===c);return`<div class="row"><span class="grow">${esc(c)}</span><span class="meta">${a.length} na lista · ${a.filter(l=>l.status!=='nova').length} contatadas · ${a.filter(l=>l.status==='fechou').length} fecharam</span></div>`}).join('<hr style="border:0;border-top:1px solid var(--line)">')}
+   <p class="note">Os números começam a fazer sentido depois de umas 30 conversas. Antes disso, são só um retrato.</p>`}
+function rModelos(){
+  const keys=['abordagem','video','retorno','video_curto','video_longo'];
+  $('#v-modelos').innerHTML=`<h2>Mensagens e vídeos</h2><p class="note">Use <b>{nome}</b> para o nome da barbearia e <b>{video}</b> para o link do vídeo curto. As alterações valem para todas as barbearias.</p>`+
+  keys.filter(k=>tpl[k]).map(k=>`<div class="card"><b>${esc(tpl[k].title)}</b><textarea data-k="${k}" style="min-height:${k.startsWith('video_')?'60px':'130px'};margin-top:8px">${esc(tpl[k].body)}</textarea><div class="row" style="margin-top:8px"><button class="btn sm" data-s="${k}">Salvar</button>${k.startsWith('video_')?`<button class="btn ghost sm" data-c="${k}">Copiar link</button>`:''}</div></div>`).join('');
+  document.querySelectorAll('[data-s]').forEach(b=>b.onclick=async()=>{const k=b.dataset.s;const v=document.querySelector(`textarea[data-k=${k}]`).value;const {error}=await sb.from('pr_templates').update({body:v}).eq('key',k);if(error)return toast('Erro: '+error.message);tpl[k].body=v;toast('Salvo')});
+  document.querySelectorAll('[data-c]').forEach(b=>b.onclick=async()=>{try{await navigator.clipboard.writeText(document.querySelector(`textarea[data-k=${b.dataset.c}]`).value.trim());toast('Link copiado')}catch(_){toast('Não consegui copiar; selecione e copie.')}})}
+// ---------- detalhe ----------
+function closeSheet(){$('#sheet').classList.remove('on')}
+$('#sheet').onclick=e=>{if(e.target.id==='sheet')closeSheet()};
+function openSheet(l){
+  const i=phoneInfo(l.phone),ok=i.ok&&!i.fixo;
+  const m=[['abordagem','1. Primeira mensagem'],['video','2. Enviar vídeo'],['retorno','3. Retorno']];
+  $('#sheet-in').innerHTML=`<div class="row"><div class="grow"><h3 style="margin:0">${esc(l.name)}</h3><div class="meta">${esc(l.address||'')} · ${esc(l.neighborhood||'')} · ${esc(l.city)}</div></div><button class="btn ghost sm" id="x">Fechar</button></div>
+   <div class="meta" style="margin:6px 0">⭐ ${l.rating||'-'} (${l.rating_count||0}) · ${esc(fmtPhone(l.phone))}${i.fixo?' · fixo':''}</div>
+   <h2>Mensagens</h2><div class="row">${m.map(([k,t])=>`<button class="btn wa sm" data-m="${k}" ${ok?'':'disabled'}>${t}</button>`).join('')}</div>
+   <div class="row" style="margin-top:8px"><button class="btn ghost sm" data-m="video_longo" ${ok?'':'disabled'}>Enviar vídeo completo (35 s)</button>${l.phone?`<a class="btn ghost sm" style="text-decoration:none" href="tel:+${esc(i.wa)}">Ligar</a>`:''}<a class="btn ghost sm" style="text-decoration:none" target="_blank" rel="noopener" href="${mapsLink(l)}">Ver no mapa</a></div>
+   <h2>Status</h2><div class="chips">${STATUS.map(([k,v])=>`<button class="chip ${l.status===k?'on':''}" data-st="${k}">${v}</button>`).join('')}</div>
+   <label>Retorno em</label><input type="date" id="nx" value="${esc(l.next_contact||'')}">
+   <label>Anotações</label><textarea id="nt" placeholder="Quem atendeu, objeção, horário bom para ligar...">${esc(l.notes||'')}</textarea>
+   <p class="row" style="margin-top:10px"><button class="btn grow" id="sv">Salvar</button><button class="btn red sm" id="dl">Excluir</button></p>
+   ${l.status==='sem_interesse'?'<p class="note">Marcada como sem interesse: não aparece mais nas listas e não deve ser chamada de novo.</p>':''}`;
+  $('#sheet').classList.add('on');$('#x').onclick=closeSheet;
+  document.querySelectorAll('[data-m]').forEach(b=>b.onclick=async()=>{
+    const k=b.dataset.m;let text;
+    if(k==='video_longo')text=fill((tpl.video||{}).body,l).replace((tpl.video_curto||{body:''}).body.trim(),(tpl.video_longo||{body:''}).body.trim());
+    else text=fill((tpl[k]||{}).body,l);
+    window.open(waLink(l,text),'_blank');
+    if(k==='abordagem'&&l.status==='nova'){await patch(l,{status:'mensagem_enviada',last_contact:new Date().toISOString(),next_contact:addDays(3)},'mensagem_enviada')}
+    else if(k.startsWith('video')){await patch(l,{status:'video_enviado',last_contact:new Date().toISOString(),next_contact:addDays(3)},'video_enviado')}
+    else if(k==='retorno'){await patch(l,{last_contact:new Date().toISOString(),next_contact:addDays(4)},'retorno_enviado')}
+    toast('WhatsApp aberto. Status atualizado.');render();openSheet(l)});
+  document.querySelectorAll('[data-st]').forEach(b=>b.onclick=async()=>{
+    const st=b.dataset.st;const f={status:st};if(st==='sem_interesse'||st==='fechou')f.next_contact=null;
+    if(await patch(l,f,st)){render();openSheet(l)}});
+  $('#sv').onclick=async()=>{if(await patch(l,{notes:$('#nt').value||null,next_contact:$('#nx').value||null})){toast('Salvo');render();closeSheet()}};
+  $('#dl').onclick=async()=>{if(!confirm('Excluir "'+l.name+'" da lista? Isso não pode ser desfeito.'))return;const {error}=await sb.from('pr_leads').delete().eq('id',l.id);if(error)return toast('Erro: '+error.message);leads=leads.filter(x=>x.id!==l.id);closeSheet();render()}}
+function addForm(){
+  $('#sheet-in').innerHTML=`<div class="row"><h3 class="grow" style="margin:0">Adicionar barbearia</h3><button class="btn ghost sm" id="x">Fechar</button></div>
+  <label>Nome</label><input id="a-n"><label>Cidade</label><input id="a-c" placeholder="Ex.: Natal">
+  <label>Bairro</label><input id="a-b"><label>Telefone com DDD</label><input id="a-p" inputmode="tel" placeholder="(84) 99999-0000">
+  <label>Endereço (opcional)</label><input id="a-e"><p><button class="btn" style="width:100%" id="a-s">Salvar</button></p>`;
+  $('#sheet').classList.add('on');$('#x').onclick=closeSheet;
+  $('#a-s').onclick=async()=>{const n=$('#a-n').value.trim(),c=$('#a-c').value.trim();if(!n||!c)return toast('Preencha nome e cidade');
+    const row={name:n,city:c,neighborhood:$('#a-b').value.trim()||null,phone:$('#a-p').value.trim()||null,address:$('#a-e').value.trim()||null};
+    const {data,error}=await sb.from('pr_leads').insert(row).select().single();if(error)return toast('Erro: '+error.message);leads.push(data);closeSheet();toast('Adicionada');render()}}
+// ---------- navegação e login ----------
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{view=b.dataset.v;document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x===b));
+  ['hoje','lista','funil','modelos'].forEach(v=>$('#v-'+v).classList.toggle('hide',v!==view));render();window.scrollTo(0,0)});
+$('#sair').onclick=async()=>{await sb.auth.signOut();location.reload()};
+async function start(){
+  const {data:{session}}=await sb.auth.getSession();
+  if(session&&session.user.email===ADMIN){$('#login').classList.add('hide');$('#app').classList.remove('hide');await load();return}
+  $('#app').classList.add('hide');$('#login').classList.remove('hide');
+  if(session)$('#lg-m').textContent='Esta conta não tem acesso. Entre com o e-mail de administrador.'}
+$('#lg-b').onclick=async()=>{const {error}=await sb.auth.signInWithPassword({email:$('#lg-e').value.trim(),password:$('#lg-p').value});if(error){$('#lg-m').textContent='E-mail ou senha incorretos.';return}start()};
+$('#lg-p').onkeydown=e=>{if(e.key==='Enter')$('#lg-b').click()};
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+start();
+</script>
+</body>
+</html>
