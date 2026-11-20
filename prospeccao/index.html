@@ -207,7 +207,7 @@ function rModelos(){
   document.querySelectorAll('[data-c]').forEach(b=>b.onclick=async()=>{try{await navigator.clipboard.writeText(document.querySelector(`textarea[data-k=${b.dataset.c}]`).value.trim());toast('Link copiado')}catch(_){toast('Não consegui copiar; selecione e copie.')}})}
 // ---------- equipe (só administrador) ----------
 async function rEquipe(){
-  const el=$('#v-equipe');el.innerHTML='<p class="note">Carregando...</p>';
+  const el=$('#v-equipe');if(!isAdmin){el.innerHTML='<p class="note">Só o administrador gerencia a equipe.</p>';return}el.innerHTML='<p class="note">Carregando...</p>';
   const [t,ev]=await Promise.all([sb.from('pr_team').select('*').order('created_at'),sb.from('pr_events').select('by_email,kind,at').gte('at',new Date(Date.now()-7*864e5).toISOString())]);
   if(t.error)return el.innerHTML='<p class="note">Erro: '+esc(t.error.message)+'</p>';
   const today=new Date().toDateString(),SEND=k=>/^(mensagem_enviada|video_enviado|imagem_enviada|retorno_enviado)$/.test(k);
