@@ -63,10 +63,11 @@ h2{font-size:17px;margin:14px 0 6px}
 <body>
 <div id="login" class="hide">
   <h1>Prospecção AgendaChat</h1>
-  <p class="note">Entre com o mesmo e-mail e senha de administrador do AgendaChat.</p>
+  <p class="note">Entre com o e-mail e a senha da sua conta. Se você faz parte da equipe e ainda não tem senha, toque em "Criar acesso" com o e-mail que o administrador cadastrou.</p>
   <label>E-mail</label><input id="lg-e" type="email" autocomplete="username">
   <label>Senha</label><input id="lg-p" type="password" autocomplete="current-password">
   <p><button class="btn grow" style="width:100%" id="lg-b">Entrar</button></p>
+  <p><button class="btn ghost" style="width:100%" id="lg-c">Criar acesso (equipe)</button></p>
   <p class="note" id="lg-m"></p>
 </div>
 
@@ -77,12 +78,14 @@ h2{font-size:17px;margin:14px 0 6px}
     <section id="v-lista" class="hide"></section>
     <section id="v-funil" class="hide"></section>
     <section id="v-modelos" class="hide"></section>
+    <section id="v-equipe" class="hide"></section>
   </main>
   <nav>
     <button data-v="hoje" class="on"><span>📅</span>Hoje</button>
     <button data-v="lista"><span>📋</span>Lista</button>
     <button data-v="funil"><span>📊</span>Funil</button>
     <button data-v="modelos"><span>✉️</span>Modelos</button>
+    <button data-v="equipe" id="nav-eq" class="hide"><span>👥</span>Equipe</button>
   </nav>
 </div>
 
@@ -93,7 +96,7 @@ h2{font-size:17px;margin:14px 0 6px}
 <script>
 const SUPA_URL='https://cdejbtrdfogzerqwjplz.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkZWpidHJkZm9nemVycXdqcGx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQzNDYyOTMsImV4cCI6MjEwOTkyMjI5M30.Is33t606jezuVU9mgQalsWlAWWmCteXsUuA1gRQvdQc';
-const ADMIN='gustavinhoferreira99@gmail.com';
+const ADMIN='gustavinhoferreira99@gmail.com';let isAdmin=false;
 const STATUS=[['nova','Nova'],['mensagem_enviada','Mensagem enviada'],['respondeu','Respondeu'],['video_enviado','Vídeo enviado'],['demonstracao','Demonstração'],['fechou','Fechou'],['sem_interesse','Sem interesse']];
 const SN=Object.fromEntries(STATUS);
 const $=s=>document.querySelector(s);
@@ -131,7 +134,7 @@ async function patch(l,fields,ev){
 // ---------- render ----------
 function render(){
   $('#sub').textContent=leads.length+' barbearias · '+new Set(leads.map(l=>l.city)).size+' cidades';
-  ({hoje:rHoje,lista:rLista,funil:rFunil,modelos:rModelos})[view]();
+  ({hoje:rHoje,lista:rLista,funil:rFunil,modelos:rModelos,equipe:rEquipe})[view]();
 }
 function leadCard(l){
   const i=phoneInfo(l.phone);
@@ -196,12 +199,27 @@ function rFunil(){
 function rModelos(){
   const keys=['abordagem','video','retorno','video_curto','video_longo'];
   $('#v-modelos').innerHTML=`<h2>Mensagens e vídeos</h2><p class="note">Use <b>{nome}</b> para o nome da barbearia e <b>{video}</b> para o link do vídeo curto. As alterações valem para todas as barbearias.</p>`+
-  keys.filter(k=>tpl[k]).map(k=>`<div class="card"><b>${esc(tpl[k].title)}</b><textarea data-k="${k}" style="min-height:${k.startsWith('video_')?'60px':'130px'};margin-top:8px">${esc(tpl[k].body)}</textarea><div class="row" style="margin-top:8px"><button class="btn sm" data-s="${k}">Salvar</button>${k.startsWith('video_')?`<button class="btn ghost sm" data-c="${k}">Copiar link</button>`:''}</div></div>`).join('');
+  keys.filter(k=>tpl[k]).map(k=>`<div class="card"><b>${esc(tpl[k].title)}</b><textarea data-k="${k}" ${isAdmin?'':'readonly'} style="min-height:${k.startsWith('video_')?'60px':'130px'};margin-top:8px">${esc(tpl[k].body)}</textarea><div class="row" style="margin-top:8px">${isAdmin?`<button class="btn sm" data-s="${k}">Salvar</button>`:''}${k.startsWith('video_')?`<button class="btn ghost sm" data-c="${k}">Copiar link</button>`:''}</div></div>`).join('');
   $('#v-modelos').insertAdjacentHTML('beforeend',`<h2>Imagens</h2><p class="note">Para enviar a uma barbearia, abra ela na lista e toque no botão da imagem. Aqui você pode ver, copiar o link, baixar ou compartilhar.</p>`+IMGS.map(([k,t])=>`<div class="card"><b>${t}</b><img src="img/${k}.jpg" alt="${t}" style="display:block;width:100%;max-width:320px;border-radius:12px;margin:8px 0"><div class="row"><button class="btn ghost sm" data-ic="${k}">Copiar link</button><a class="btn ghost sm" style="text-decoration:none" href="img/${k}.jpg" download="agendachat-${k}.jpg">Baixar</a><button class="btn sm" data-is="${k}">Compartilhar</button></div></div>`).join(''));
   document.querySelectorAll('[data-ic]').forEach(b=>b.onclick=async()=>{try{await navigator.clipboard.writeText(imgUrl(b.dataset.ic));toast('Link copiado')}catch(_){toast('Não consegui copiar.')}});
   document.querySelectorAll('[data-is]').forEach(b=>b.onclick=async()=>{const k=b.dataset.is;try{const bl=await (await fetch('img/'+k+'.jpg')).blob();const f=new File([bl],'agendachat-'+k+'.jpg',{type:'image/jpeg'});if(navigator.canShare&&navigator.canShare({files:[f]}))await navigator.share({files:[f]});else{await navigator.clipboard.writeText(imgUrl(k));toast('Neste aparelho não dá para compartilhar o arquivo. Link copiado.')}}catch(e){if(e&&e.name!=='AbortError')toast('Não consegui compartilhar.')}});
   document.querySelectorAll('[data-s]').forEach(b=>b.onclick=async()=>{const k=b.dataset.s;const v=document.querySelector(`textarea[data-k=${k}]`).value;const {error}=await sb.from('pr_templates').update({body:v}).eq('key',k);if(error)return toast('Erro: '+error.message);tpl[k].body=v;toast('Salvo')});
   document.querySelectorAll('[data-c]').forEach(b=>b.onclick=async()=>{try{await navigator.clipboard.writeText(document.querySelector(`textarea[data-k=${b.dataset.c}]`).value.trim());toast('Link copiado')}catch(_){toast('Não consegui copiar; selecione e copie.')}})}
+// ---------- equipe (só administrador) ----------
+async function rEquipe(){
+  const el=$('#v-equipe');el.innerHTML='<p class="note">Carregando...</p>';
+  const [t,ev]=await Promise.all([sb.from('pr_team').select('*').order('created_at'),sb.from('pr_events').select('by_email,kind,at').gte('at',new Date(Date.now()-7*864e5).toISOString())]);
+  if(t.error)return el.innerHTML='<p class="note">Erro: '+esc(t.error.message)+'</p>';
+  const today=new Date().toDateString(),SEND=k=>/^(mensagem_enviada|video_enviado|imagem_enviada|retorno_enviado)$/.test(k);
+  const cnt=e=>{const a=(ev.data||[]).filter(x=>(x.by_email||'')===e&&SEND(x.kind));return [a.filter(x=>new Date(x.at).toDateString()===today).length,a.length]};
+  el.innerHTML=`<h2>Equipe</h2><p class="note">Quem está aqui pode ver a lista, chamar no WhatsApp e atualizar o status das barbearias. Só você (administrador) edita modelos, gerencia a equipe e exclui barbearias. Depois de cadastrar o e-mail, a pessoa abre este mesmo aplicativo, toca em "Criar acesso" com esse e-mail, confirma no e-mail e entra.</p>`+
+  (t.data.length?t.data.map(m=>{const [d,w]=cnt(m.email);return `<div class="card"><div class="row"><div class="grow"><b>${esc(m.name||m.email)}</b><div class="meta">${esc(m.email)}</div><div class="meta">Mensagens enviadas: ${d} hoje · ${w} nos últimos 7 dias</div></div><button class="btn red sm" data-rm="${esc(m.email)}">Remover</button></div></div>`}).join(''):'<p class="note">Ninguém cadastrado ainda.</p>')+
+  `<div class="card"><b>Adicionar pessoa</b><label>Nome</label><input id="tm-n"><label>E-mail (o mesmo que ela vai usar para entrar)</label><input id="tm-e" type="email" autocapitalize="off"><p><button class="btn" id="tm-a">Adicionar</button></p></div>
+   <div class="card"><b>Você</b><div class="meta">Mensagens enviadas: ${cnt(ADMIN)[0]} hoje · ${cnt(ADMIN)[1]} nos últimos 7 dias</div></div>`;
+  $('#tm-a').onclick=async()=>{const email=$('#tm-e').value.trim().toLowerCase();if(!/^\S+@\S+\.\S+$/.test(email))return toast('E-mail inválido');
+    const {error}=await sb.from('pr_team').insert({email,name:$('#tm-n').value.trim()||null});if(error)return toast(error.code==='23505'?'Esse e-mail já está na equipe.':'Erro: '+error.message);toast('Adicionado');rEquipe()};
+  el.querySelectorAll('[data-rm]').forEach(b=>b.onclick=async()=>{if(!confirm('Remover '+b.dataset.rm+' da equipe? A pessoa perde o acesso na hora.'))return;
+    const {error}=await sb.from('pr_team').delete().eq('email',b.dataset.rm);if(error)return toast('Erro: '+error.message);toast('Removido');rEquipe()})}
 // ---------- detalhe ----------
 function closeSheet(){$('#sheet').classList.remove('on')}
 $('#sheet').onclick=e=>{if(e.target.id==='sheet')closeSheet()};
@@ -216,7 +234,7 @@ function openSheet(l){
    <h2>Status</h2><div class="chips">${STATUS.map(([k,v])=>`<button class="chip ${l.status===k?'on':''}" data-st="${k}">${v}</button>`).join('')}</div>
    <label>Retorno em</label><input type="date" id="nx" value="${esc(l.next_contact||'')}">
    <label>Anotações</label><textarea id="nt" placeholder="Quem atendeu, objeção, horário bom para ligar...">${esc(l.notes||'')}</textarea>
-   <p class="row" style="margin-top:10px"><button class="btn grow" id="sv">Salvar</button><button class="btn red sm" id="dl">Excluir</button></p>
+   <p class="row" style="margin-top:10px"><button class="btn grow" id="sv">Salvar</button>${isAdmin?'<button class="btn red sm" id="dl">Excluir</button>':''}</p>
    ${l.status==='sem_interesse'?'<p class="note">Marcada como sem interesse: não aparece mais nas listas e não deve ser chamada de novo.</p>':''}`;
   $('#sheet').classList.add('on');$('#x').onclick=closeSheet;
   document.querySelectorAll('[data-m]').forEach(b=>b.onclick=async()=>{
@@ -237,7 +255,7 @@ function openSheet(l){
     const st=b.dataset.st;const f={status:st};if(st==='sem_interesse'||st==='fechou')f.next_contact=null;
     if(await patch(l,f,st)){render();openSheet(l)}});
   $('#sv').onclick=async()=>{if(await patch(l,{notes:$('#nt').value||null,next_contact:$('#nx').value||null})){toast('Salvo');render();closeSheet()}};
-  $('#dl').onclick=async()=>{if(!confirm('Excluir "'+l.name+'" da lista? Isso não pode ser desfeito.'))return;const {error}=await sb.from('pr_leads').delete().eq('id',l.id);if(error)return toast('Erro: '+error.message);leads=leads.filter(x=>x.id!==l.id);closeSheet();render()}}
+  if($('#dl'))$('#dl').onclick=async()=>{if(!confirm('Excluir "'+l.name+'" da lista? Isso não pode ser desfeito.'))return;const {error}=await sb.from('pr_leads').delete().eq('id',l.id);if(error)return toast('Erro: '+error.message);leads=leads.filter(x=>x.id!==l.id);closeSheet();render()}}
 function addForm(){
   $('#sheet-in').innerHTML=`<div class="row"><h3 class="grow" style="margin:0">Adicionar barbearia</h3><button class="btn ghost sm" id="x">Fechar</button></div>
   <label>Nome</label><input id="a-n"><label>Cidade</label><input id="a-c" placeholder="Ex.: Natal">
@@ -249,14 +267,20 @@ function addForm(){
     const {data,error}=await sb.from('pr_leads').insert(row).select().single();if(error)return toast('Erro: '+error.message);leads.push(data);closeSheet();toast('Adicionada');render()}}
 // ---------- navegação e login ----------
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{view=b.dataset.v;document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x===b));
-  ['hoje','lista','funil','modelos'].forEach(v=>$('#v-'+v).classList.toggle('hide',v!==view));render();window.scrollTo(0,0)});
+  ['hoje','lista','funil','modelos','equipe'].forEach(v=>$('#v-'+v).classList.toggle('hide',v!==view));render();window.scrollTo(0,0)});
 $('#sair').onclick=async()=>{await sb.auth.signOut();location.reload()};
 async function start(){
   const {data:{session}}=await sb.auth.getSession();
-  if(session&&session.user.email===ADMIN){$('#login').classList.add('hide');$('#app').classList.remove('hide');await load();return}
+  if(session){
+    const {data:ok}=await sb.rpc('pr_is_team');
+    if(ok===true){isAdmin=session.user.email===ADMIN;$('#nav-eq').classList.toggle('hide',!isAdmin);$('#login').classList.add('hide');$('#app').classList.remove('hide');await load();return}
+  }
   $('#app').classList.add('hide');$('#login').classList.remove('hide');
-  if(session)$('#lg-m').textContent='Esta conta não tem acesso. Entre com o e-mail de administrador.'}
+  if(session)$('#lg-m').textContent='Esta conta ainda não faz parte da equipe. Peça ao administrador para cadastrar o seu e-mail.'}
 $('#lg-b').onclick=async()=>{const {error}=await sb.auth.signInWithPassword({email:$('#lg-e').value.trim(),password:$('#lg-p').value});if(error){$('#lg-m').textContent='E-mail ou senha incorretos.';return}start()};
+$('#lg-c').onclick=async()=>{const email=$('#lg-e').value.trim(),password=$('#lg-p').value;if(!email||password.length<6){$('#lg-m').textContent='Digite seu e-mail e escolha uma senha com pelo menos 6 caracteres.';return}
+  const {data,error}=await sb.auth.signUp({email,password});if(error){$('#lg-m').textContent='Não consegui criar o acesso: '+error.message;return}
+  $('#lg-m').textContent=data.session?'Acesso criado.':'Acesso criado. Abra o e-mail que você recebeu, confirme, e depois toque em Entrar.';if(data.session)start()};
 $('#lg-p').onkeydown=e=>{if(e.key==='Enter')$('#lg-b').click()};
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 start();
