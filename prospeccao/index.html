@@ -77,6 +77,7 @@ h2{font-size:17px;margin:14px 0 6px}
     <section id="v-hoje"></section>
     <section id="v-lista" class="hide"></section>
     <section id="v-funil" class="hide"></section>
+    <section id="v-parcerias" class="hide"></section>
     <section id="v-modelos" class="hide"></section>
     <section id="v-equipe" class="hide"></section>
   </main>
@@ -84,6 +85,7 @@ h2{font-size:17px;margin:14px 0 6px}
     <button data-v="hoje" class="on"><span>📅</span>Hoje</button>
     <button data-v="lista"><span>📋</span>Lista</button>
     <button data-v="funil"><span>📊</span>Funil</button>
+    <button data-v="parcerias"><span>🤝</span>Parcerias</button>
     <button data-v="modelos"><span>✉️</span>Modelos</button>
     <button data-v="equipe" id="nav-eq" class="hide"><span>👥</span>Equipe</button>
   </nav>
@@ -102,7 +104,7 @@ const SN=Object.fromEntries(STATUS);
 const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const sb=window.supabase.createClient(SUPA_URL,SUPA_KEY);
-let leads=[],tpl={},view='hoje',F={city:'',status:'',q:'',sort:'asc',mobile:false,hideNo:true};
+let leads=[],partners=[],PF='',tpl={},view='hoje',F={city:'',status:'',q:'',sort:'asc',mobile:false,hideNo:true};
 try{Object.assign(F,JSON.parse(localStorage.getItem('pr_f')||'{}'))}catch(_){}
 const saveF=()=>{try{localStorage.setItem('pr_f',JSON.stringify(F))}catch(_){}};
 function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2600)}
@@ -122,7 +124,7 @@ function mapsLink(l){return'https://www.google.com/maps/search/?api=1&query='+en
 async function load(){
   const [a,b]=await Promise.all([sb.from('pr_leads').select('*').order('rating_count',{ascending:true}).limit(2000),sb.from('pr_templates').select('*').order('sort')]);
   if(a.error){toast('Erro ao carregar: '+a.error.message);return}
-  leads=a.data||[];tpl={};(b.data||[]).forEach(t=>tpl[t.key]=t);render()
+  const all=a.data||[];leads=all.filter(l=>l.kind!=='parceria');partners=all.filter(l=>l.kind==='parceria');tpl={};(b.data||[]).forEach(t=>tpl[t.key]=t);render()
 }
 async function patch(l,fields,ev){
   const {error}=await sb.from('pr_leads').update(fields).eq('id',l.id);
@@ -134,7 +136,7 @@ async function patch(l,fields,ev){
 // ---------- render ----------
 function render(){
   $('#sub').textContent=leads.length+' barbearias · '+new Set(leads.map(l=>l.city)).size+' cidades';
-  ({hoje:rHoje,lista:rLista,funil:rFunil,modelos:rModelos,equipe:rEquipe})[view]();
+  ({hoje:rHoje,lista:rLista,funil:rFunil,parcerias:rParcerias,modelos:rModelos,equipe:rEquipe})[view]();
 }
 function leadCard(l){
   const i=phoneInfo(l.phone);
@@ -271,9 +273,61 @@ function addForm(){
   $('#a-s').onclick=async()=>{const n=$('#a-n').value.trim(),c=$('#a-c').value.trim();if(!n||!c)return toast('Preencha nome e cidade');
     const row={name:n,city:c,neighborhood:$('#a-b').value.trim()||null,phone:$('#a-p').value.trim()||null,address:$('#a-e').value.trim()||null};
     const {data,error}=await sb.from('pr_leads').insert(row).select().single();if(error)return toast('Erro: '+error.message);leads.push(data);closeSheet();toast('Adicionada');render()}}
+// ---------- parcerias (escolas, lojas e distribuidoras) ----------
+const PST=[['nova','A contatar'],['mensagem_enviada','Contatado'],['respondeu','Respondeu'],['demonstracao','Reunião marcada'],['fechou','Parceria fechada'],['sem_interesse','Sem interesse']];
+const PSN=Object.fromEntries(PST);
+const PTYPES=['Escola','Loja','Distribuidora'];
+function pMsg(l){const eu=myName?'Meu nome é '+myName+', sou do AgendaChat':'Sou do AgendaChat';
+  if(l.ptype==='Escola')return 'Olá, tudo bem? '+eu+', um sistema em que o cliente da barbearia agenda sozinho pelo link, sem baixar aplicativo. Gostaria de oferecer uma condição especial para os alunos do curso de barbeiro de vocês. Também posso fazer uma palestra rápida e gratuita para as turmas sobre como organizar a agenda e os clientes. Com quem posso falar sobre isso?';
+  return 'Olá, tudo bem? '+eu+', um sistema de agendamento online para barbearias: o cliente agenda sozinho pelo link, sem baixar aplicativo. Sei que muitos barbeiros compram com vocês e queria propor uma parceria simples: um cartão no balcão com um benefício para os seus clientes. Para vocês é um brinde a mais, sem custo. Posso passar aí para mostrar em 10 minutos?'}
+function pCard(l){const i=phoneInfo(l.phone);
+  return `<div class="card" data-pid="${esc(l.id)}">
+   <div class="row"><div class="grow"><h3>${esc(l.name)}</h3><div class="meta">${esc(l.ptype||'Parceiro')} · ${esc(l.neighborhood||'')}${l.neighborhood?' · ':''}${esc(l.city)}</div></div><span class="badge b-${esc(l.status)}">${esc(PSN[l.status]||l.status)}</span></div>
+   <div class="meta" style="margin:6px 0">${esc(fmtPhone(l.phone))}${i.fixo?' · <b style="color:var(--amber)">telefone fixo</b>':''}${l.next_contact?' · retorno '+esc(l.next_contact.split('-').reverse().join('/')):''}</div>
+   ${l.notes?`<div class="meta" style="margin-bottom:6px">${esc(l.notes)}</div>`:''}
+   <div class="row"><button class="btn wa grow" data-a="pwa" ${(!i.ok||i.fixo)?'disabled':''}>Enviar proposta</button>${i.ok?`<a class="btn ghost" style="text-decoration:none" href="tel:+${esc(i.wa)}">Ligar</a>`:''}<button class="btn ghost" data-a="popen">Detalhes</button></div>
+  </div>`}
+async function pSend(l){window.open(waLink(l,pMsg(l)),'_blank');
+  if(l.status==='nova'){await patch(l,{status:'mensagem_enviada',last_contact:new Date().toISOString(),next_contact:addDays(3)},'mensagem_enviada');toast('Marcado como "Contatado". Retorno em 3 dias.')}render()}
+function rParcerias(){
+  const el=$('#v-parcerias');
+  const r=partners.filter(l=>!PF||l.ptype===PF).sort((a,b)=>(a.status==='sem_interesse')-(b.status==='sem_interesse')||a.name.localeCompare(b.name));
+  const fech=partners.filter(l=>l.status==='fechou').length;
+  el.innerHTML=`<h2>Futuras parcerias (${partners.length})</h2><p class="note">Escolas de barbeiro, lojas e distribuidoras que podem indicar o AgendaChat para muitas barbearias de uma vez. ${fech} parceria(s) fechada(s). Ajuste a proposta antes de enviar: o benefício oferecido precisa ser cumprido.</p>
+   <div class="chips">${['',...PTYPES].map(t=>`<button class="chip ${PF===t?'on':''}" data-pf="${t}">${t||'Todos'}</button>`).join('')}</div>
+   <p><button class="btn" id="p-add" style="width:100%">+ Adicionar parceiro</button></p>
+   ${r.length?r.map(pCard).join(''):'<div class="empty">Nenhum parceiro nesta categoria.</div>'}`;
+  el.querySelectorAll('[data-pf]').forEach(b=>b.onclick=()=>{PF=b.dataset.pf;rParcerias()});
+  $('#p-add').onclick=pAddForm;
+  el.querySelectorAll('.card[data-pid]').forEach(c=>{const l=partners.find(x=>x.id===c.dataset.pid);
+    c.querySelector('[data-a=pwa]').onclick=()=>pSend(l);c.querySelector('[data-a=popen]').onclick=()=>pSheet(l)})}
+function pSheet(l){const i=phoneInfo(l.phone),ok=i.ok&&!i.fixo;
+  $('#sheet-in').innerHTML=`<div class="row"><div class="grow"><h3 style="margin:0">${esc(l.name)}</h3><div class="meta">${esc([l.ptype||'Parceiro',l.address,l.neighborhood,l.city].filter(Boolean).join(' · '))}</div></div><button class="btn ghost sm" id="x">Fechar</button></div>
+   <div class="meta" style="margin:6px 0">${esc(fmtPhone(l.phone))}${i.fixo?' · fixo (ligue)':''}</div>
+   <h2>Proposta</h2><div class="prev" style="white-space:pre-wrap;background:#e7f6ea;border:1px solid #b9e0c2;color:#12301a;border-radius:12px;padding:10px 12px;font-size:14px">${esc(pMsg(l))}</div>
+   <div class="row" style="margin-top:8px"><button class="btn wa sm" id="p-wa" ${ok?'':'disabled'}>Enviar no WhatsApp</button>${i.ok?`<a class="btn ghost sm" style="text-decoration:none" href="tel:+${esc(i.wa)}">Ligar</a>`:''}<a class="btn ghost sm" style="text-decoration:none" target="_blank" rel="noopener" href="${mapsLink(l)}">Ver no mapa</a></div>
+   <h2>Status</h2><div class="chips">${PST.map(([k,v])=>`<button class="chip ${l.status===k?'on':''}" data-pst="${k}">${v}</button>`).join('')}</div>
+   <label>Tipo</label><select id="p-t">${PTYPES.map(t=>`<option ${l.ptype===t?'selected':''}>${t}</option>`).join('')}</select>
+   <label>Retorno em</label><input type="date" id="p-nx" value="${esc(l.next_contact||'')}">
+   <label>Anotações</label><textarea id="p-nt" placeholder="Com quem falou, o que combinaram, benefício oferecido...">${esc(l.notes||'')}</textarea>
+   <p class="row" style="margin-top:10px"><button class="btn grow" id="p-sv">Salvar</button>${isAdmin?'<button class="btn red sm" id="p-dl">Excluir</button>':''}</p>`;
+  $('#sheet').classList.add('on');$('#x').onclick=closeSheet;
+  $('#p-wa').onclick=async()=>{await pSend(l);pSheet(l)};
+  document.querySelectorAll('[data-pst]').forEach(b=>b.onclick=async()=>{const st=b.dataset.pst;const f={status:st};if(st==='sem_interesse'||st==='fechou')f.next_contact=null;if(await patch(l,f,st)){render();pSheet(l)}});
+  $('#p-sv').onclick=async()=>{if(await patch(l,{ptype:$('#p-t').value,notes:$('#p-nt').value||null,next_contact:$('#p-nx').value||null})){toast('Salvo');render();closeSheet()}};
+  if($('#p-dl'))$('#p-dl').onclick=async()=>{if(!confirm('Excluir "'+l.name+'" das parcerias? Isso não pode ser desfeito.'))return;const {error}=await sb.from('pr_leads').delete().eq('id',l.id);if(error)return toast('Erro: '+error.message);partners=partners.filter(x=>x.id!==l.id);closeSheet();render()}}
+function pAddForm(){
+  $('#sheet-in').innerHTML=`<div class="row"><h3 class="grow" style="margin:0">Adicionar parceiro</h3><button class="btn ghost sm" id="x">Fechar</button></div>
+  <label>Nome</label><input id="pa-n"><label>Tipo</label><select id="pa-t">${PTYPES.map(t=>`<option>${t}</option>`).join('')}</select>
+  <label>Cidade</label><input id="pa-c" placeholder="Ex.: Natal"><label>Bairro</label><input id="pa-b"><label>Telefone com DDD</label><input id="pa-p" inputmode="tel" placeholder="(84) 99999-0000">
+  <label>Anotações (opcional)</label><input id="pa-o"><p><button class="btn" style="width:100%" id="pa-s">Salvar</button></p>`;
+  $('#sheet').classList.add('on');$('#x').onclick=closeSheet;
+  $('#pa-s').onclick=async()=>{const n=$('#pa-n').value.trim(),c=$('#pa-c').value.trim();if(!n||!c)return toast('Preencha nome e cidade');
+    const row={kind:'parceria',ptype:$('#pa-t').value,name:n,city:c,neighborhood:$('#pa-b').value.trim()||null,phone:$('#pa-p').value.trim()||null,notes:$('#pa-o').value.trim()||null};
+    const {data,error}=await sb.from('pr_leads').insert(row).select().single();if(error)return toast('Erro: '+error.message);partners.push(data);closeSheet();toast('Parceiro adicionado');render()}}
 // ---------- navegação e login ----------
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{view=b.dataset.v;document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x===b));
-  ['hoje','lista','funil','modelos','equipe'].forEach(v=>$('#v-'+v).classList.toggle('hide',v!==view));render();window.scrollTo(0,0)});
+  ['hoje','lista','funil','parcerias','modelos','equipe'].forEach(v=>$('#v-'+v).classList.toggle('hide',v!==view));render();window.scrollTo(0,0)});
 $('#sair').onclick=async()=>{await sb.auth.signOut();location.reload()};
 async function loadName(){
   let n='';
