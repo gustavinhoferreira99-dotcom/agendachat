@@ -167,7 +167,7 @@ input[type=color]{width:42px;height:34px;border:1px solid var(--bd);border-radiu
 .l2-fin{padding:42px 22px;text-align:center;margin-top:36px}
 .l2-fin p{color:#b9c1d0;max-width:52ch;margin:0 auto 22px;font-size:17px}.l2-fin .ctas{justify-content:center}
 .l2-fin .rf{margin:20px 0 0;font-weight:700;color:#e6eaf2;font-size:15px}
-.ft{text-align:center;color:var(--mu);font-size:13px;padding:16px}
+.ft{text-align:center;color:var(--mu);font-size:13px;padding:16px 16px 88px}.ft a{color:inherit;text-decoration:underline}
 .wafab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:5;background:#1fa855;color:#fff;border-radius:999px;padding:14px 20px;font-weight:700;text-decoration:none;box-shadow:0 8px 24px rgba(31,168,85,.45)}
 .l2.js .rv{opacity:0;transform:translateY(14px);transition:opacity .5s,transform .5s}.l2.js .rv.in{opacity:1;transform:none}
 @media(min-width:800px){.l2-hero{padding:26px 48px 0}.l2-nav{margin-bottom:60px}.l2-nav nav{display:flex}.l2-hg{grid-template-columns:1.15fr .85fr}.l2-chips{grid-template-columns:1fr 1fr}
@@ -194,7 +194,7 @@ input[type=color]{width:42px;height:34px;border:1px solid var(--bd);border-radiu
         <div>
           <h1>Seu cliente agenda sozinho. Você só corta.</h1>
           <p class="l2-lead">Transforme a maneira como sua barbearia recebe agendamentos. Com o AgendaChat, seus clientes podem solicitar horários online de forma prática, enquanto você ganha mais organização e profissionalismo.</p>
-          <ul class="l2-chips"><li>Agendamento online 24 horas</li><li>Menos dependência de conversas manuais</li><li>Mais organização para sua barbearia</li><li>Experiência profissional para seus clientes</li></ul>
+          <ul class="l2-chips"><li>Sem limite de profissionais: o mesmo preço para 1 ou 10 barbeiros</li><li>Agendamento online 24 horas</li><li>Menos dependência de conversas manuais</li><li>Mais organização para sua barbearia</li><li>Experiência profissional para seus clientes</li></ul>
           <div class="ctas"><button class="cta" data-go data-ev="cta_trial">Quero experimentar grátis</button><a class="cta sec" href="#como" data-ev="demo">Ver como funciona</a></div>
           <p class="fine">14 dias grátis, sem cartão de crédito. Funciona no celular do seu cliente, sem instalar aplicativo.</p>
         </div>
@@ -235,7 +235,7 @@ input[type=color]{width:42px;height:34px;border:1px solid var(--bd);border-radiu
       <p>Chegou a hora de modernizar seus agendamentos e oferecer aos seus clientes uma experiência mais simples e profissional. Com o AgendaChat, sua barbearia conta com uma solução digital para facilitar a rotina e organizar os atendimentos.</p>
       <div class="ctas"><button class="cta" data-go data-ev="cta_trial">Começar meu teste grátis</button><a class="cta sec" href="#planos">Conhecer os planos</a></div>
       <p class="rf">Modernize sua barbearia. Facilite seus agendamentos. Valorize sua marca.</p></section>
-    <div class="ft">AgendaChat: agendamento online por conversa para barbearias</div>
+    <div class="ft">AgendaChat: agendamento online por conversa para barbearias<br>Dúvidas, vendas e suporte: <a href="https://wa.me/5584998299967?text=Ol%C3%A1!%20Quero%20saber%20mais%20sobre%20o%20AgendaChat." target="_blank" rel="noopener">WhatsApp (84) 99829-9967</a></div>
   </div></div>
 
   <div class="view" id="v-auth"><div class="pane"><div class="card">
@@ -250,6 +250,8 @@ input[type=color]{width:42px;height:34px;border:1px solid var(--bd);border-radiu
     <h3>Vamos criar sua barbearia</h3><p>Você personaliza o resto depois.</p>
     <label for="on-name">Nome da barbearia ou salão</label><input class="fi" id="on-name" maxlength="60">
     <label for="on-slug">Seu link (letras minúsculas, números e hífen)</label><input class="fi" id="on-slug" maxlength="30">
+    <label for="on-wa">WhatsApp da barbearia (com DDD)</label><input class="fi" id="on-wa" inputmode="tel" autocomplete="tel" placeholder="(84) 99999-0000">
+    <p style="color:var(--mu);font-size:13px;margin:4px 0 0">É nele que você recebe os agendamentos. Dá para trocar depois.</p>
     <p class="err" id="on-e"></p>
     <button class="btn" id="on-go">Criar e começar</button>
   </div></div></div>
@@ -484,7 +486,7 @@ $('#send').onclick=send;inp.onkeydown=e=>{if(e.key=='Enter')send()};
 
 /* ---------- DONO ---------- */
 const AUTHERR={'Invalid login credentials':'E-mail ou senha incorretos.','User already registered':'Este e-mail já tem conta. Toque em Entrar.','Email not confirmed':'Confirme seu e-mail pelo link que enviamos (olhe também o spam) e depois toque em Entrar.'};
-const TRACK=true,CONTATO={wa:'',email:''};
+const TRACK=true,CONTATO={wa:'5584998299967',email:''};
 function track(n){try{window.gtag&&gtag('event',n)}catch(_){}return TRACK?sb.rpc('track_event',{p_name:n}).then(()=>{},()=>{}):Promise.resolve()}
 async function auth(up){if(up)track('signup_start');const bs=[$('#login'),$('#signup')];bs.forEach(b=>b.disabled=true);try{await auth0(up)}finally{bs.forEach(b=>b.disabled=false)}}
 async function auth0(up){const email=$('#em').value.trim(),password=$('#pw').value;$('#ae').textContent='';
@@ -501,11 +503,14 @@ async function owner(){
   const {data}=await sb.from('shops').select(SCOLS).eq('owner',session.user.id).maybeSingle();
   if(!data){show('v-onb');return}shop=data;await loadComm();panel()}
 $('#on-name').oninput=e=>{$('#on-slug').value=slugify(e.target.value)};
-$('#on-go').onclick=async()=>{const name=$('#on-name').value.trim(),s=$('#on-slug').value.trim(),e=$('#on-e');e.textContent='';
+$('#on-go').onclick=async()=>{const name=$('#on-name').value.trim(),s=$('#on-slug').value.trim(),wa=$('#on-wa').value.replace(/\D/g,''),e=$('#on-e');e.textContent='';
   if(!name||!/^[a-z0-9-]{3,30}$/.test(s)){e.textContent='Informe o nome e um link com 3 a 30 letras minúsculas, números ou hífen.';return}
+  if(wa.length<10||wa.length>13){e.textContent='Informe o WhatsApp com DDD, por exemplo (84) 99999-0000.';return}
   const {data,error}=await sb.from('shops').insert({slug:s,name}).select(SCOLS).single();
   if(error){e.textContent=error.code=='23505'?'Esse link já está em uso. Escolha outro.':'Não foi possível criar. Tente de novo.';return}
-  shop=data;shop.commissions={};panel()};
+  shop=data;shop.commissions={};
+  const w=$('#on-wa').value.trim();const {error:we}=await sb.from('shops').update({wa:w}).eq('id',shop.id);if(!we)shop.wa=w;
+  panel()};
 function persist(){cfg=shop;theme();lgUi();$('#st').textContent='Salvando…';clearTimeout(tm);
   tm=setTimeout(async()=>{const {name,emoji,color,wa,open,close,services,addons,barbers,barber_photos,logo_url,tagline,address,instagram,days,lunch_from,lunch_to,deposit,loyalty_n,loyalty_reward,review_url}=shop;
     const {error}=await sb.from('shops').update({name,emoji,color,wa,open,close,services,addons,barbers,barber_photos,logo_url,tagline,address,instagram,days,lunch_from,lunch_to,deposit,loyalty_n,loyalty_reward,review_url}).eq('id',shop.id);
