@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /prospeccao/
+
+Sitemap: https://agendachat.digital/sitemap.xml
