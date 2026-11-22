@@ -38,6 +38,8 @@ input[type=text]{width:100%;padding:10px 12px;border:1px solid var(--bd);border-
 .day{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:14px;margin-bottom:10px}
 .day h3{margin:0 0 6px;font-size:16px}.day small{color:var(--mu);display:block;margin-bottom:8px}.day p{margin:4px 0;font-size:14px;white-space:pre-wrap}
 .kit{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.hm{grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}.hc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:16px;cursor:pointer;text-align:left;color:var(--tx);font:inherit;display:block;width:100%}.hc:hover{border-color:var(--ac)}.hc .e{font-size:26px}.hc b{display:block;margin:6px 0 2px;font-size:15px}.hc span{color:var(--mu);font-size:13px;display:block}
+@media print{header,.cfg,#back,#home,.toast,.sec:not(.on){display:none!important}}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:14px;font-weight:600;opacity:0;transition:.2s;pointer-events:none;z-index:9}
 .toast.on{opacity:1}
 </style></head><body><div class="w" id="gate"><header><h1>Kit de Bônus AgendaChat</h1></header><div class="cfg" id="gm"><h2>Verificando seu acesso…</h2></div></div>
@@ -52,12 +54,13 @@ input[type=text]{width:100%;padding:10px 12px;border:1px solid var(--bd);border-
 <div><label>Link de agendamento</label><input type="text" id="f_link" placeholder="https://agendachat.digital/..."></div>
 <div><label>Endereço</label><input type="text" id="f_end" placeholder="Rua Exemplo, 123 - Centro"></div>
 <div><label>Horário de funcionamento</label><input type="text" id="f_hor" placeholder="de terça a sábado, 9h às 19h"></div>
+<div><label>Cidade</label><input type="text" id="f_cidade" placeholder="Natal"></div>
 <div><label>Oferta (para artes de promoção)</label><input type="text" id="f_oferta" placeholder="R$ 50"></div>
 <div><label>Logo (opcional)</label><input type="file" id="f_logo" accept="image/*"></div>
 </div>
 <div style="margin-top:12px"><label>Cores</label><div class="sw" id="sw"></div></div></div>
 
-<div class="tabs" id="tabs"></div>
+<div id="home" class="grid hm"></div><div id="back" hidden style="margin:6px 0 14px"><button class="btn s" id="backb">← Todos os bônus</button><h2 id="bt" style="margin:12px 0 4px;font-size:20px"></h2></div>
 
 <section class="sec" id="s_artes"><div class="row"><div class="seg" id="fmt"><button data-f="feed" class="on">Feed 4:5</button><button data-f="story">Story 9:16</button></div><span style="color:var(--mu);font-size:13px">Toque em "Baixar" e poste direto no Instagram.</span></div><div class="grid" id="grid"></div></section>
 <section class="sec" id="s_balcao"><p style="color:var(--mu);margin-top:0">Peças para imprimir. O QR code leva para o seu link de agendamento. Imprima o PNG em gráfica ou em casa.</p><div class="kit" id="kit"></div></section>
@@ -75,11 +78,11 @@ let logoImg=null,fmt='feed';
 let plano='vitalicio',LIMIT=20;
 const save=()=>{try{localStorage.setItem(K,JSON.stringify(cfg))}catch(_){}};
 const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),1800)};
-const T=(s)=>(s||'').replace(/\{nome\}/g,cfg.nome||'sua barbearia').replace(/\{ig\}/g,cfg.ig||'@suabarbearia').replace(/\{wpp\}/g,cfg.wpp||'').replace(/\{link\}/g,linkShow()).replace(/\{end\}/g,cfg.end||'Seu endereço aqui').replace(/\{hor\}/g,cfg.hor||'de terça a sábado').replace(/\{oferta\}/g,cfg.oferta||'preço especial');
+const T=(s)=>(s||'').replace(/\{nome\}/g,cfg.nome||'sua barbearia').replace(/\{ig\}/g,cfg.ig||'@suabarbearia').replace(/\{wpp\}/g,cfg.wpp||'').replace(/\{link\}/g,linkShow()).replace(/\{end\}/g,cfg.end||'Seu endereço aqui').replace(/\{cidade\}/g,cfg.cidade||'sua cidade').replace(/\{hor\}/g,cfg.hor||'de terça a sábado').replace(/\{oferta\}/g,cfg.oferta||'preço especial');
 const fullLink=()=>{let l=(cfg.link||'').trim()||'https://agendachat.digital';return /^https?:/.test(l)?l:'https://'+l};
 const linkShow=()=>fullLink().replace(/^https?:\/\//,'').replace(/\/$/,'');
 // ---------- campos
-[['nome','f_nome'],['ig','f_ig'],['wpp','f_wpp'],['link','f_link'],['end','f_end'],['hor','f_hor'],['oferta','f_oferta']].forEach(([k,id])=>{const e=$('#'+id);e.value=k==='link'&&cfg.link==='https://agendachat.digital'?'':cfg[k];e.oninput=()=>{cfg[k]=e.value;save();rerender()}});
+[['nome','f_nome'],['ig','f_ig'],['wpp','f_wpp'],['link','f_link'],['end','f_end'],['hor','f_hor'],['oferta','f_oferta'],['cidade','f_cidade']].forEach(([k,id])=>{const e=$('#'+id);e.value=k==='link'&&cfg.link==='https://agendachat.digital'?'':cfg[k];e.oninput=()=>{cfg[k]=e.value;save();rerender()}});
 $('#f_logo').onchange=e=>{const f=e.target.files[0];if(!f)return;const i=new Image();i.onload=()=>{logoImg=i;rerender()};i.src=URL.createObjectURL(f)};
 $('#sw').innerHTML=THEMES.map((t,i)=>`<button data-i="${i}" title="${t.n}" style="background:linear-gradient(135deg,${t.bg} 50%,${t.ac} 50%)"></button>`).join('');
 $$('#sw button').forEach(b=>b.onclick=()=>{cfg.theme=+b.dataset.i;save();$$('#sw button').forEach(x=>x.classList.toggle('on',x===b));rerender()});
@@ -190,21 +193,23 @@ const PLAN=[
 ['Dia 7 · Domingo','Obrigado pela confiança',17,'Story: agradeça a semana e mostre o horário de abertura de segunda.','Obrigado a todo mundo que passou pela {nome} esta semana. A agenda da próxima já está aberta: {link}']];
 function buildPlano(){const p=$('#plano');p.innerHTML='';PLAN.forEach(([d,t,ai,st,cap])=>{const el=document.createElement('div');el.className='day';const c=T(cap);const locked=ai>=LIMIT;el.innerHTML=`<h3>${d}</h3><small>Post do dia: arte ${ai+1} — ${t}${locked?' (arte exclusiva do Vitalício)':''}</small><p><b>Story:</b> ${st}</p><p><b>Legenda:</b> </p><div class="row" style="margin-top:8px"></div>`;el.querySelectorAll('p')[1].append(c);const r=el.querySelector('.row');const b1=document.createElement('button');b1.className='btn';b1.textContent='Copiar legenda';b1.onclick=()=>navigator.clipboard.writeText(c).then(()=>toast('Legenda copiada'),()=>{});r.appendChild(b1);if(!locked){const b2=document.createElement('button');b2.className='btn s';b2.textContent='Baixar arte';b2.onclick=()=>{fmt='feed';downloadArt(ai)};r.appendChild(b2)}p.appendChild(el)})}
 // ---------- abas
-const TABS=[['artes','20 Artes'],['balcao','Kit do balcão'],['wpp','Mensagens WhatsApp'],['plano','Plano de 7 dias']];
-$('#tabs').innerHTML=TABS.map(([k,t],i)=>`<button data-k="${k}" class="${i?'':'on'}">${t}</button>`).join('');
-function tab(k){$$('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.k===k));$$('.sec').forEach(s=>s.classList.toggle('on',s.id==='s_'+k))}
-$$('#tabs button').forEach(b=>b.onclick=()=>{tab(b.dataset.k);if(b.dataset.k==='balcao')buildKit()});
-let rt;function rerender(){clearTimeout(rt);rt=setTimeout(()=>{buildGrid();buildWpp();buildPlano();if($('#s_balcao').classList.contains('on'))buildKit()},250)}
-tab('artes');
+const BUILD=window.BUILD={artes:()=>buildGrid(),balcao:()=>buildKit(),wpp:()=>buildWpp(),plano:()=>buildPlano()};
+const CORE=[['artes','20 artes para Instagram','Posts e stories com o seu nome, cor e logo','🎨'],['balcao','Kit do balcão','Placa, adesivo para o espelho e cartão com QR code','🖨️'],['wpp','Mensagens de WhatsApp','12 mensagens prontas para encher a agenda','💬'],['plano','Plano de 7 dias','Uma semana de conteúdo com arte e legenda','🗓️']];
+let curB=null;
+function buildHome(){const h=$('#home');h.innerHTML='';[...CORE,...((window.EXTRAS&&EXTRAS.X)||[])].forEach(([k,t,d,e])=>{const b=document.createElement('button');b.className='hc';b.innerHTML=`<span class="e">${e}</span><b></b><span></span>`;b.querySelector('b').textContent=t;b.querySelectorAll('span')[1].textContent=d;b.onclick=()=>openB(k,t);h.appendChild(b)})}
+function openB(k,t){curB=k;$('#home').hidden=true;$('#back').hidden=false;$('#bt').textContent=t||'';$$('.sec').forEach(x=>x.classList.toggle('on',x.id==='s_'+k));try{BUILD[k]&&BUILD[k]()}catch(e){console.error(e)}window.scrollTo(0,0)}
+$('#backb').onclick=()=>{curB=null;$('#home').hidden=false;$('#back').hidden=true;$$('.sec').forEach(x=>x.classList.remove('on'))};
+let rt;function rerender(){clearTimeout(rt);rt=setTimeout(()=>{if(curB&&BUILD[curB])BUILD[curB]()},250)}
 // ---------- acesso: só quem já pagou o plano
 const SUPA_URL='https://cdejbtrdfogzerqwjplz.supabase.co',SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkZWpidHJkZm9nemVycXdqcGx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQzNDYyOTMsImV4cCI6MjEwOTkyMjI5M30.Is33t606jezuVU9mgQalsWlAWWmCteXsUuA1gRQvdQc';
 function gateMsg(h,p,btn,fn){$('#gm').innerHTML=`<h2>${h}</h2><p class="hint" style="font-size:15px">${p}</p>`+(btn?`<button class="btn" id="gb">${btn}</button>`:'');if(btn)$('#gb').onclick=fn}
 const goPanel=plan=>{try{if(plan)localStorage.setItem('ag:plano','1')}catch(_){}location.href='/?admin'};
 async function start(){
+ if(document.readyState!=='complete')await new Promise(r=>addEventListener('load',r));
  let sb;try{sb=window.supabase.createClient(SUPA_URL,SUPA_KEY)}catch(_){return gateMsg('Não foi possível verificar','Recarregue a página e tente de novo.')}
  const {data:{session}}=await sb.auth.getSession();
  if(!session)return gateMsg('Entre no seu painel','Os bônus ficam dentro do painel da sua barbearia.','Ir para o painel',()=>goPanel(false));
- const {data:sh}=await sb.from('shops').select('name,slug,wa,address,instagram,plan,plan_until,logo_url').eq('owner',session.user.id).maybeSingle();
+ const {data:sh}=await sb.from('shops').select('name,slug,wa,address,instagram,plan,plan_until,logo_url,services').eq('owner',session.user.id).maybeSingle();
  if(!sh)return gateMsg('Crie sua barbearia primeiro','Termine o cadastro no painel para acessar os bônus.','Ir para o painel',()=>goPanel(false));
  const pago=sh.plan==='vitalicio'||(sh.plan==='mensal'&&sh.plan_until&&new Date(sh.plan_until)>new Date());
  if(!pago)return gateMsg('Bônus liberados após o pagamento','Assine o plano Mensal ou Vitalício e o Kit de Bônus é liberado na hora, aqui no seu painel.','Ver planos',()=>goPanel(true));
@@ -215,8 +220,11 @@ async function start(){
  Object.keys(pre).forEach(k=>{if(!cfg[k]||(k==='link'&&cfg.link==='https://agendachat.digital'))cfg[k]=pre[k];const id={nome:'f_nome',ig:'f_ig',wpp:'f_wpp',end:'f_end',link:'f_link'}[k];$('#'+id).value=cfg[k]});
  save();
  if(sh.logo_url){const i=new Image();i.crossOrigin='anonymous';i.onload=()=>{logoImg=i;rerender()};i.src=sh.logo_url}
+ if(!cfg.servicos&&sh.services)cfg.servicos=String(sh.services);
+ if(window.EXTRAS)EXTRAS.init();buildHome();
  $('#gate').hidden=true;$('#app').hidden=false;
  if(document.fonts&&document.fonts.load)await Promise.all(['500','600','800'].map(w=>document.fonts.load(w+' 40px Poppins'))).catch(()=>{});
- buildGrid();buildWpp();buildPlano()}
+ }
 start();
-</script></body></html>
+</script>
+<script src="extras.js"></script></body></html>
