@@ -40,7 +40,8 @@ input[type=text]{width:100%;padding:10px 12px;border:1px solid var(--bd);border-
 .kit{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:14px;font-weight:600;opacity:0;transition:.2s;pointer-events:none;z-index:9}
 .toast.on{opacity:1}
-</style></head><body><div class="w">
+</style></head><body><div class="w" id="gate"><header><h1>Kit de Bônus AgendaChat</h1></header><div class="cfg" id="gm"><h2>Verificando seu acesso…</h2></div></div>
+<div class="w" id="app" hidden>
 <header><h1>Kit de Bônus AgendaChat</h1><p>Artes prontas, kit do balcão, mensagens de WhatsApp e plano de 7 dias. Preencha os dados da sua barbearia uma vez e tudo sai personalizado, pronto para baixar.</p><p id="planotag" style="margin-top:8px;font-weight:600"></p></header>
 
 <div class="cfg"><h2>Dados da sua barbearia</h2><p class="hint">Fica salvo neste aparelho. Nada é enviado para ninguém.</p>
@@ -63,6 +64,7 @@ input[type=text]{width:100%;padding:10px 12px;border:1px solid var(--bd);border-
 <section class="sec" id="s_wpp"><div id="wpp"></div></section>
 <section class="sec" id="s_plano"><p style="color:var(--mu);margin-top:0">Uma semana de conteúdo para lotar a agenda. Baixe a arte do dia, copie a legenda e poste.</p><div id="plano"></div></section>
 </div><div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="qr.js"></script>
 <script>
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
@@ -70,9 +72,7 @@ const THEMES=[{n:'Preto e dourado',bg:'#14110d',fg:'#f7f1e6',ac:'#e9b44c',mu:'#b
 const K='agk_bonus1';let cfg={nome:'',ig:'',wpp:'',link:'https://agendachat.digital',end:'',hor:'',oferta:'',theme:0};
 try{Object.assign(cfg,JSON.parse(localStorage.getItem(K)||'{}'))}catch(_){}
 let logoImg=null,fmt='feed';
-const plano=new URLSearchParams(location.search).get('plano')==='mensal'?'mensal':'vitalicio';
-const LIMIT=plano==='mensal'?10:20;
-$('#planotag').textContent=plano==='mensal'?'Seu plano: Mensal · 10 artes liberadas':'Seu plano: Vitalício · 20 artes + todos os bônus';
+let plano='vitalicio',LIMIT=20;
 const save=()=>{try{localStorage.setItem(K,JSON.stringify(cfg))}catch(_){}};
 const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),1800)};
 const T=(s)=>(s||'').replace(/\{nome\}/g,cfg.nome||'sua barbearia').replace(/\{ig\}/g,cfg.ig||'@suabarbearia').replace(/\{wpp\}/g,cfg.wpp||'').replace(/\{link\}/g,linkShow()).replace(/\{end\}/g,cfg.end||'Seu endereço aqui').replace(/\{hor\}/g,cfg.hor||'de terça a sábado').replace(/\{oferta\}/g,cfg.oferta||'preço especial');
@@ -163,7 +163,7 @@ const PIECES=[
 {n:'Cartão de visita (frente)',f:'cartao-frente.png',W:900,H:500,d(c,W,H,th){c.fillStyle=th.bg;c.fillRect(0,0,W,H);c.textAlign='left';c.font='800 60px Poppins';c.fillStyle=th.fg;const nm=(cfg.nome||'NOME DA BARBEARIA').toUpperCase();const w=wrap(c,tokens(nm),780,'800 60px Poppins');w.lines.slice(0,2).forEach((l,i)=>{c.fillStyle=i?th.ac:th.fg;c.fillText(l.it.map(x=>x.w).join(' '),60,150+i*68)});
  c.font='500 28px Poppins';c.fillStyle=th.mu;c.fillText('Cortes · Barba · Sobrancelha',60,310);c.fillText([cfg.ig,cfg.wpp].filter(Boolean).join(' · ')||'@seuinstagram · (00) 00000-0000',60,352);c.font='800 26px Poppins';c.fillStyle=th.ac;if('letterSpacing' in c)c.letterSpacing='6px';c.fillText('AGENDE ONLINE ›',60,430);if('letterSpacing' in c)c.letterSpacing='0px'}},
 {n:'Cartão de visita (verso)',f:'cartao-verso.png',W:900,H:500,d(c,W,H,th){c.fillStyle=th.ac;c.fillRect(0,0,W,H);qrDraw(c,50,70,360,'#14110d','#ffffff',1);c.textAlign='left';c.font='800 44px Poppins';c.fillStyle=th.on;c.fillText('Seu horário',450,200);c.fillText('na palma da mão',450,252);c.font='500 28px Poppins';wrap(c,tokens('Aponte a câmera, escolha e pronto. Sem app, sem conta.'),400,'500 28px Poppins').lines.forEach((l,i)=>c.fillText(l.it.map(x=>x.w).join(' '),450,310+i*38))}}];
-function buildKit(){const k=$('#kit');k.innerHTML='';PIECES.forEach(p=>{const d=document.createElement('div');d.className='card';const cv=document.createElement('canvas');d.appendChild(cv);const m=document.createElement('div');m.className='m';m.innerHTML=`<span>${p.n}</span><button class="btn">Baixar</button>`;d.appendChild(m);k.appendChild(d);const th=THEMES[cfg.theme];const draw=(cvs)=>{cvs.width=p.W;cvs.height=p.H;const c=cvs.getContext('2d');c.textAlign='left';p.d(c,p.W,p.H,th)};draw(cv);m.querySelector('button').onclick=()=>{const t=document.createElement('canvas');draw(t);dl(t,p.f);toast('Baixando '+p.n)}})}
+function buildKit(){const k=$('#kit');k.innerHTML='';if(plano==='mensal'){k.innerHTML='<div class="msg"><b>Kit do balcão: exclusivo do plano Vitalício</b><p>Placa, adesivo e cartão com o seu QR code. Faça o upgrade para o Vitalício para liberar.</p></div>';return}PIECES.forEach(p=>{const d=document.createElement('div');d.className='card';const cv=document.createElement('canvas');d.appendChild(cv);const m=document.createElement('div');m.className='m';m.innerHTML=`<span>${p.n}</span><button class="btn">Baixar</button>`;d.appendChild(m);k.appendChild(d);const th=THEMES[cfg.theme];const draw=(cvs)=>{cvs.width=p.W;cvs.height=p.H;const c=cvs.getContext('2d');c.textAlign='left';p.d(c,p.W,p.H,th)};draw(cv);m.querySelector('button').onclick=()=>{const t=document.createElement('canvas');draw(t);dl(t,p.f);toast('Baixando '+p.n)}})}
 // ---------- WhatsApp
 const MSGS=[
 ['Convidar clientes antigos','Fala, [nome]! Agora você marca seu horário na {nome} direto pelo celular, sem esperar resposta. É só entrar: {link}'],
@@ -188,7 +188,7 @@ const PLAN=[
 ['Dia 5 · Sexta','Sexta é dia de ficar no talo',4,'Story: bastidores da barbearia na sexta cheia.','Fim de semana chegando. Garanta seu horário de sexta ou sábado: {link}'],
 ['Dia 6 · Sábado','Sábado cheio? Agende já',5,'Story: contagem de vagas restantes ao longo do dia.','Sábado é o dia mais disputado da {nome}. Quem marca antes não espera: {link}'],
 ['Dia 7 · Domingo','Obrigado pela confiança',17,'Story: agradeça a semana e mostre o horário de abertura de segunda.','Obrigado a todo mundo que passou pela {nome} esta semana. A agenda da próxima já está aberta: {link}']];
-function buildPlano(){const p=$('#plano');p.innerHTML='';PLAN.forEach(([d,t,ai,st,cap])=>{const el=document.createElement('div');el.className='day';const c=T(cap);const locked=ai>=LIMIT;el.innerHTML=`<h3>${d}</h3><small>Post do dia: arte ${ai+1} — ${t}${locked?' (arte exclusiva do Vitalício)':''}</small><p><b>Story:</b> ${st}</p><p><b>Legenda:</b> </p><div class="row" style="margin-top:8px"></div>`;el.querySelectorAll('p')[1].append(c);const r=el.querySelector('.row');const b1=document.createElement('button');b1.className='btn';b1.textContent='Copiar legenda';b1.onclick=()=>navigator.clipboard.writeText(c).then(()=>toast('Legenda copiada'),()=>{});r.appendChild(b1);if(!locked){const b2=document.createElement('button');b2.className='btn s';b2.textContent='Baixar arte';b2.onclick=()=>{fmt='feed';downloadArt(ai)};r.appendChild(b2)}p.appendChild(el)})}
+function buildPlano(){const p=$('#plano');p.innerHTML='';if(plano==='mensal'){p.innerHTML='<div class="msg"><b>Plano de 7 dias: exclusivo do plano Vitalício</b><p>Faça o upgrade para o Vitalício para liberar.</p></div>';return}PLAN.forEach(([d,t,ai,st,cap])=>{const el=document.createElement('div');el.className='day';const c=T(cap);const locked=ai>=LIMIT;el.innerHTML=`<h3>${d}</h3><small>Post do dia: arte ${ai+1} — ${t}${locked?' (arte exclusiva do Vitalício)':''}</small><p><b>Story:</b> ${st}</p><p><b>Legenda:</b> </p><div class="row" style="margin-top:8px"></div>`;el.querySelectorAll('p')[1].append(c);const r=el.querySelector('.row');const b1=document.createElement('button');b1.className='btn';b1.textContent='Copiar legenda';b1.onclick=()=>navigator.clipboard.writeText(c).then(()=>toast('Legenda copiada'),()=>{});r.appendChild(b1);if(!locked){const b2=document.createElement('button');b2.className='btn s';b2.textContent='Baixar arte';b2.onclick=()=>{fmt='feed';downloadArt(ai)};r.appendChild(b2)}p.appendChild(el)})}
 // ---------- abas
 const TABS=[['artes','20 Artes'],['balcao','Kit do balcão'],['wpp','Mensagens WhatsApp'],['plano','Plano de 7 dias']];
 $('#tabs').innerHTML=TABS.map(([k,t],i)=>`<button data-k="${k}" class="${i?'':'on'}">${t}</button>`).join('');
@@ -196,5 +196,27 @@ function tab(k){$$('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.
 $$('#tabs button').forEach(b=>b.onclick=()=>{tab(b.dataset.k);if(b.dataset.k==='balcao')buildKit()});
 let rt;function rerender(){clearTimeout(rt);rt=setTimeout(()=>{buildGrid();buildWpp();buildPlano();if($('#s_balcao').classList.contains('on'))buildKit()},250)}
 tab('artes');
-(document.fonts&&document.fonts.load?Promise.all(['500','600','800'].map(w=>document.fonts.load(w+' 40px Poppins'))):Promise.resolve()).catch(()=>{}).then(()=>{buildGrid();buildWpp();buildPlano()});
+// ---------- acesso: só quem já pagou o plano
+const SUPA_URL='https://cdejbtrdfogzerqwjplz.supabase.co',SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkZWpidHJkZm9nemVycXdqcGx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQzNDYyOTMsImV4cCI6MjEwOTkyMjI5M30.Is33t606jezuVU9mgQalsWlAWWmCteXsUuA1gRQvdQc';
+function gateMsg(h,p,btn,fn){$('#gm').innerHTML=`<h2>${h}</h2><p class="hint" style="font-size:15px">${p}</p>`+(btn?`<button class="btn" id="gb">${btn}</button>`:'');if(btn)$('#gb').onclick=fn}
+const goPanel=plan=>{try{if(plan)localStorage.setItem('ag:plano','1')}catch(_){}location.href='/?admin'};
+async function start(){
+ let sb;try{sb=window.supabase.createClient(SUPA_URL,SUPA_KEY)}catch(_){return gateMsg('Não foi possível verificar','Recarregue a página e tente de novo.')}
+ const {data:{session}}=await sb.auth.getSession();
+ if(!session)return gateMsg('Entre no seu painel','Os bônus ficam dentro do painel da sua barbearia.','Ir para o painel',()=>goPanel(false));
+ const {data:sh}=await sb.from('shops').select('name,slug,wa,address,instagram,plan,plan_until,logo_url').eq('owner',session.user.id).maybeSingle();
+ if(!sh)return gateMsg('Crie sua barbearia primeiro','Termine o cadastro no painel para acessar os bônus.','Ir para o painel',()=>goPanel(false));
+ const pago=sh.plan==='vitalicio'||(sh.plan==='mensal'&&sh.plan_until&&new Date(sh.plan_until)>new Date());
+ if(!pago)return gateMsg('Bônus liberados após o pagamento','Assine o plano Mensal ou Vitalício e o Kit de Bônus é liberado na hora, aqui no seu painel.','Ver planos',()=>goPanel(true));
+ plano=sh.plan==='vitalicio'?'vitalicio':'mensal';LIMIT=plano==='mensal'?10:20;
+ $('#planotag').textContent=plano==='mensal'?'Seu plano: Mensal · 10 artes e mensagens de WhatsApp liberadas':'Seu plano: Vitalício · 20 artes + todos os bônus';
+ // pré-preenche com os dados da barbearia (sem sobrescrever o que ele já editou)
+ const pre={nome:sh.name||'',ig:sh.instagram?'@'+String(sh.instagram).replace(/^@/,''):'',wpp:(()=>{const d=String(sh.wa||'').replace(/\D/g,'').replace(/^55(?=\d{10,11}$)/,'');return d.length>=10?`(${d.slice(0,2)}) ${d.slice(2,d.length-4)}-${d.slice(-4)}`:''})(),end:sh.address||'',link:location.origin+'/?s='+sh.slug};
+ Object.keys(pre).forEach(k=>{if(!cfg[k]||(k==='link'&&cfg.link==='https://agendachat.digital'))cfg[k]=pre[k];const id={nome:'f_nome',ig:'f_ig',wpp:'f_wpp',end:'f_end',link:'f_link'}[k];$('#'+id).value=cfg[k]});
+ save();
+ if(sh.logo_url){const i=new Image();i.crossOrigin='anonymous';i.onload=()=>{logoImg=i;rerender()};i.src=sh.logo_url}
+ $('#gate').hidden=true;$('#app').hidden=false;
+ if(document.fonts&&document.fonts.load)await Promise.all(['500','600','800'].map(w=>document.fonts.load(w+' 40px Poppins'))).catch(()=>{});
+ buildGrid();buildWpp();buildPlano()}
+start();
 </script></body></html>

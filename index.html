@@ -264,7 +264,7 @@ input[type=color]{width:42px;height:34px;border:1px solid var(--bd);border-radiu
   </div>
 
   <div class="view" id="v-own">
-    <div class="tabs"><button data-t="r">Painel</button><button data-t="a">Agenda</button><button data-t="f">Financeiro</button><button data-t="c">Clientes</button><button data-t="e">Estoque</button><button data-t="u">Clube</button><button data-t="m">Marketing</button><button data-t="p" class="on">Perfil</button><button data-t="l">Plano</button></div>
+    <div class="tabs"><button data-t="r">Painel</button><button data-t="a">Agenda</button><button data-t="f">Financeiro</button><button data-t="c">Clientes</button><button data-t="e">Estoque</button><button data-t="u">Clube</button><button data-t="m">Marketing</button><button data-t="p" class="on">Perfil</button><button data-t="b">Bônus</button><button data-t="l">Plano</button></div>
     <div class="pane" id="t-p">
       <div class="card">
         <h3>Seu link para os clientes</h3><p>Coloque na bio do Instagram, no WhatsApp e no Google Meu Negócio.</p>
@@ -313,6 +313,7 @@ input[type=color]{width:42px;height:34px;border:1px solid var(--bd);border-radiu
       </div>
     </div>
     <div class="pane" id="t-a" hidden></div><div class="pane" id="t-r" hidden></div><div class="pane" id="t-f" hidden></div><div class="pane" id="t-c" hidden></div><div class="pane" id="t-e" hidden></div><div class="pane" id="t-u" hidden></div><div class="pane" id="t-m" hidden></div>
+    <div class="pane" id="t-b" hidden><div class="card" id="bn"></div></div>
     <div class="pane" id="t-l" hidden><div class="card"><h3 id="pt"></h3><p id="pe" style="margin:6px 0 0"></p></div><div id="pl"></div></div>
   </div>
 </div>
@@ -458,6 +459,11 @@ async function pnOn(){const s=$('#pns');
     if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:pnKey(key)});
     const j=sub.toJSON(),{error}=await sb.from('push_subs').upsert({shop_id:shop.id,endpoint:j.endpoint,p256dh:j.keys.p256dh,auth:j.keys.auth,ua:navigator.userAgent.slice(0,200)},{onConflict:'endpoint'});if(error)throw error;
     pnUi()}catch(_){s.textContent='Não foi possível ativar as notificações. Confira a internet e tente de novo.'}}
+function bonus(){const pago=shop.plan=='vitalicio'||(shop.plan=='mensal'&&shop.plan_until&&new Date(shop.plan_until)>new Date()),el=$('#bn');
+  const v=shop.plan=='vitalicio';
+  const li=a=>'<ul style="list-style:none;margin:10px 0 14px;padding:0">'+a.map(x=>`<li style="padding:4px 0 4px 24px;position:relative"><span style="position:absolute;left:0;color:#1fa855;font-weight:700">✓</span>${x}</li>`).join('')+'</ul>';
+  if(!pago){el.innerHTML='<h3>🔒 Bônus para assinantes</h3><p>Assine o plano e libere na hora, aqui no painel:</p>'+li(['Artes prontas para o Instagram, com o nome e o logo da sua barbearia','Mensagens de WhatsApp prontas para encher a agenda','Vitalício: kit do balcão (placa, adesivo e cartão com QR code) e plano de 7 dias de conteúdo'])+'<button class="btn" id="bnp">Ver planos</button>';$('#bnp').onclick=()=>document.querySelector('.tabs [data-t=l]').click();return}
+  el.innerHTML='<h3>🎁 Seus bônus estão liberados</h3><p>'+(v?'Plano Vitalício: tudo liberado.':'Plano Mensal: parte dos bônus liberada.')+'</p>'+li(v?['20 artes para Instagram com a sua marca','Kit do balcão: placa, adesivo e cartão com QR code','12 mensagens de WhatsApp prontas','Plano de 7 dias de conteúdo']:['10 artes para Instagram com a sua marca','12 mensagens de WhatsApp prontas','Kit do balcão e plano de 7 dias: exclusivos do Vitalício'])+'<button class="btn" id="bno">Abrir meus bônus</button>';$('#bno').onclick=()=>{location.href='/bonus/'}}
 function pwaOwner(){if(pwaOwner.done)return;pwaOwner.done=1;const ic=shop.logo_url||'',u=location.origin+location.pathname+'?admin',m={id:location.pathname+'?admin',name:'Painel '+shop.name,short_name:('Painel '+shop.name).slice(0,12),start_url:u,scope:location.origin+location.pathname,display:'standalone',background_color:'#ffffff',theme_color:shop.color||'#a4262c',icons:ic?[{src:ic,sizes:'256x256',type:'image/png'},{src:ic,sizes:'512x512',type:'image/png'}]:[]};
   document.querySelectorAll('link[rel=manifest]').forEach(x=>x.remove());
   const l=document.createElement('link');l.rel='manifest';l.href=URL.createObjectURL(new Blob([JSON.stringify(m)],{type:'application/manifest+json'}));document.head.appendChild(l);
@@ -585,7 +591,7 @@ function panel(){cfg=shop;theme();lgUi();pwaOwner();instOwner();pnUi();$('#sub')
   $('#op').onclick=()=>window.open(link(),'_blank');
   document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
     document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x==b));
-    ['p','a','r','f','c','e','u','m','l'].forEach(t=>$('#t-'+t).hidden=t!=b.dataset.t);({a:agenda,r:painel,f:fin,c:clientes,e:estoque,u:clube,m:mkt})[b.dataset.t]?.()})}
+    ['p','a','r','f','c','e','u','m','b','l'].forEach(t=>$('#t-'+t).hidden=t!=b.dataset.t);({a:agenda,r:painel,f:fin,c:clientes,e:estoque,u:clube,m:mkt,b:bonus})[b.dataset.t]?.()})}
 const DW=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 function dwUi(){const on=(shop.days||'1,2,3,4,5,6').split(',').map(Number),el=$('#dws');el.innerHTML='';DW.forEach((n,i)=>{const b=document.createElement('button');b.textContent=n;b.className=on.includes(i)?'on':'';b.setAttribute('aria-pressed',on.includes(i));b.onclick=()=>{const t=new Set(on);t.has(i)?t.delete(i):t.add(i);if(!t.size)return;shop.days=[...t].sort().join(',');persist();dwUi()};el.appendChild(b)})}
 function qrPng(){const q=qrcode(0,'M');q.addData(link());q.make();const n=q.getModuleCount(),W=1080,H=1350,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d'),F='system-ui,sans-serif';
