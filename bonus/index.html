@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Kit de Bônus AgendaChat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f1ea;--sf:#fff;--tx:#17140f;--mu:#6b6558;--bd:#e3ddd0;--ac:#a4262c;--on:#fff;--r:14px}
+@media(prefers-color-scheme:dark){:root{--bg:#12100d;--sf:#1c1914;--tx:#f3ede1;--mu:#a39b8a;--bd:#2e2a22}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 Poppins,system-ui,sans-serif}
+.w{max-width:1080px;margin:0 auto;padding:0 16px 80px}
+header{padding:28px 0 8px}h1{font-size:clamp(24px,5vw,34px);line-height:1.15;margin:0 0 6px;font-weight:800}
+header p{margin:0;color:var(--mu);max-width:640px}
+.cfg{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:16px;margin:18px 0}
+.cfg h2{font-size:16px;margin:0 0 4px}.cfg .hint{color:var(--mu);font-size:13px;margin:0 0 12px}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
+label{font-size:12px;color:var(--mu);display:block;margin-bottom:3px;font-weight:600}
+input[type=text]{width:100%;padding:10px 12px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);font:inherit;font-size:15px}
+.sw{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.sw button{width:38px;height:38px;border-radius:50%;border:3px solid transparent;cursor:pointer;outline:1px solid var(--bd)}
+.sw button.on{border-color:var(--tx)}
+.tabs{display:flex;gap:6px;overflow-x:auto;margin:6px 0 16px;padding-bottom:4px;position:sticky;top:0;background:var(--bg);z-index:5;padding-top:8px}
+.tabs button{border:1px solid var(--bd);background:var(--sf);color:var(--tx);padding:10px 16px;border-radius:999px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
+.tabs button.on{background:var(--ac);color:var(--on);border-color:var(--ac)}
+.sec{display:none}.sec.on{display:block}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 14px}
+.seg button{border:1px solid var(--bd);background:var(--sf);color:var(--tx);padding:8px 14px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.seg button:first-child{border-radius:10px 0 0 10px}.seg button:last-child{border-radius:0 10px 10px 0}.seg button.on{background:var(--tx);color:var(--bg)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:10px;position:relative}
+.card canvas{width:100%;height:auto;border-radius:8px;display:block;background:#ddd}
+.card .m{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:13px;color:var(--mu)}
+.btn{border:0;background:var(--ac);color:var(--on);padding:9px 14px;border-radius:10px;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.btn.s{background:var(--bg);color:var(--tx);border:1px solid var(--bd)}
+.lock{position:absolute;inset:0;border-radius:var(--r);background:rgba(18,16,13,.72);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:16px;font-size:14px;font-weight:600}
+.msg{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:14px;margin-bottom:10px}
+.msg b{font-size:14px}.msg p{margin:6px 0 10px;white-space:pre-wrap;font-size:15px}
+.day{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:14px;margin-bottom:10px}
+.day h3{margin:0 0 6px;font-size:16px}.day small{color:var(--mu);display:block;margin-bottom:8px}.day p{margin:4px 0;font-size:14px;white-space:pre-wrap}
+.kit{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:14px;font-weight:600;opacity:0;transition:.2s;pointer-events:none;z-index:9}
+.toast.on{opacity:1}
+</style></head><body><div class="w">
+<header><h1>Kit de Bônus AgendaChat</h1><p>Artes prontas, kit do balcão, mensagens de WhatsApp e plano de 7 dias. Preencha os dados da sua barbearia uma vez e tudo sai personalizado, pronto para baixar.</p><p id="planotag" style="margin-top:8px;font-weight:600"></p></header>
+
+<div class="cfg"><h2>Dados da sua barbearia</h2><p class="hint">Fica salvo neste aparelho. Nada é enviado para ninguém.</p>
+<div class="g">
+<div><label>Nome da barbearia</label><input type="text" id="f_nome" placeholder="Barbearia do João"></div>
+<div><label>Instagram</label><input type="text" id="f_ig" placeholder="@barbeariadojoao"></div>
+<div><label>WhatsApp</label><input type="text" id="f_wpp" placeholder="(84) 99999-9999"></div>
+<div><label>Link de agendamento</label><input type="text" id="f_link" placeholder="https://agendachat.digital/..."></div>
+<div><label>Endereço</label><input type="text" id="f_end" placeholder="Rua Exemplo, 123 - Centro"></div>
+<div><label>Horário de funcionamento</label><input type="text" id="f_hor" placeholder="de terça a sábado, 9h às 19h"></div>
+<div><label>Oferta (para artes de promoção)</label><input type="text" id="f_oferta" placeholder="R$ 50"></div>
+<div><label>Logo (opcional)</label><input type="file" id="f_logo" accept="image/*"></div>
+</div>
+<div style="margin-top:12px"><label>Cores</label><div class="sw" id="sw"></div></div></div>
+
+<div class="tabs" id="tabs"></div>
+
+<section class="sec" id="s_artes"><div class="row"><div class="seg" id="fmt"><button data-f="feed" class="on">Feed 4:5</button><button data-f="story">Story 9:16</button></div><span style="color:var(--mu);font-size:13px">Toque em "Baixar" e poste direto no Instagram.</span></div><div class="grid" id="grid"></div></section>
+<section class="sec" id="s_balcao"><p style="color:var(--mu);margin-top:0">Peças para imprimir. O QR code leva para o seu link de agendamento. Imprima o PNG em gráfica ou em casa.</p><div class="kit" id="kit"></div></section>
+<section class="sec" id="s_wpp"><div id="wpp"></div></section>
+<section class="sec" id="s_plano"><p style="color:var(--mu);margin-top:0">Uma semana de conteúdo para lotar a agenda. Baixe a arte do dia, copie a legenda e poste.</p><div id="plano"></div></section>
+</div><div class="toast" id="toast"></div>
+<script src="qr.js"></script>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const THEMES=[{n:'Preto e dourado',bg:'#14110d',fg:'#f7f1e6',ac:'#e9b44c',mu:'#b9ae9a',on:'#14110d'},{n:'Creme',bg:'#f7f1e6',fg:'#14110d',ac:'#a4262c',mu:'#6b6558',on:'#fff'},{n:'Vermelho',bg:'#a4262c',fg:'#fff',ac:'#f3d9a4',mu:'#f0c9cb',on:'#4a0f12'},{n:'Azul',bg:'#12285e',fg:'#fff',ac:'#e9b44c',mu:'#b8c4e6',on:'#14110d'}];
+const K='agk_bonus1';let cfg={nome:'',ig:'',wpp:'',link:'https://agendachat.digital',end:'',hor:'',oferta:'',theme:0};
+try{Object.assign(cfg,JSON.parse(localStorage.getItem(K)||'{}'))}catch(_){}
+let logoImg=null,fmt='feed';
+const plano=new URLSearchParams(location.search).get('plano')==='mensal'?'mensal':'vitalicio';
+const LIMIT=plano==='mensal'?10:20;
+$('#planotag').textContent=plano==='mensal'?'Seu plano: Mensal · 10 artes liberadas':'Seu plano: Vitalício · 20 artes + todos os bônus';
+const save=()=>{try{localStorage.setItem(K,JSON.stringify(cfg))}catch(_){}};
+const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),1800)};
+const T=(s)=>(s||'').replace(/\{nome\}/g,cfg.nome||'sua barbearia').replace(/\{ig\}/g,cfg.ig||'@suabarbearia').replace(/\{wpp\}/g,cfg.wpp||'').replace(/\{link\}/g,linkShow()).replace(/\{end\}/g,cfg.end||'Seu endereço aqui').replace(/\{hor\}/g,cfg.hor||'de terça a sábado').replace(/\{oferta\}/g,cfg.oferta||'preço especial');
+const fullLink=()=>{let l=(cfg.link||'').trim()||'https://agendachat.digital';return /^https?:/.test(l)?l:'https://'+l};
+const linkShow=()=>fullLink().replace(/^https?:\/\//,'').replace(/\/$/,'');
+// ---------- campos
+[['nome','f_nome'],['ig','f_ig'],['wpp','f_wpp'],['link','f_link'],['end','f_end'],['hor','f_hor'],['oferta','f_oferta']].forEach(([k,id])=>{const e=$('#'+id);e.value=k==='link'&&cfg.link==='https://agendachat.digital'?'':cfg[k];e.oninput=()=>{cfg[k]=e.value;save();rerender()}});
+$('#f_logo').onchange=e=>{const f=e.target.files[0];if(!f)return;const i=new Image();i.onload=()=>{logoImg=i;rerender()};i.src=URL.createObjectURL(f)};
+$('#sw').innerHTML=THEMES.map((t,i)=>`<button data-i="${i}" title="${t.n}" style="background:linear-gradient(135deg,${t.bg} 50%,${t.ac} 50%)"></button>`).join('');
+$$('#sw button').forEach(b=>b.onclick=()=>{cfg.theme=+b.dataset.i;save();$$('#sw button').forEach(x=>x.classList.toggle('on',x===b));rerender()});
+$$('#sw button')[cfg.theme].classList.add('on');
+// ---------- desenho
+const rr=(c,x,y,w,h,r)=>{c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath()};
+function tokens(t){const o=[];t.split('*').forEach((seg,i)=>seg.split(/\s+/).filter(Boolean).forEach(w=>o.push({w,h:i%2===1})));return o}
+function wrap(c,tk,maxW,font){c.font=font;const sp=c.measureText(' ').width,lines=[];let cur=[],cw=0;tk.forEach(t=>{const w=c.measureText(t.w).width;if(cur.length&&cw+sp+w>maxW){lines.push({it:cur,w:cw});cur=[];cw=0}cw+=(cur.length?sp:0)+w;cur.push({...t,mw:w})});if(cur.length)lines.push({it:cur,w:cw});return{lines,sp}}
+function drawLines(c,L,sp,x,y,lh,align,maxW,th){c.textBaseline='alphabetic';L.forEach((ln,i)=>{let px=align==='c'?x+(maxW-ln.w)/2:x;ln.it.forEach(t=>{c.fillStyle=t.h?th.ac:th.fg;c.fillText(t.w,px,y+i*lh);px+=t.mw+sp})})}
+function pole(c,x,y,w,h,th){c.save();c.beginPath();c.rect(x,y,w,h);c.clip();const cols=['#d2343c','#ffffff','#2b5fd9'];const sw=34;for(let i=-20;i<(w+h)/sw+4;i++){c.fillStyle=cols[((i%3)+3)%3];c.beginPath();c.moveTo(x+i*sw,y+h);c.lineTo(x+i*sw+sw,y+h);c.lineTo(x+i*sw+sw+h,y);c.lineTo(x+i*sw+h,y);c.fill()}c.restore()}
+const COPY=[
+['AGENDA ONLINE','Agende seu horário *pelo celular*','Escolha serviço, barbeiro e horário em segundos. Sem app, sem conta.',0,0],
+['AGENDA ABERTA','Sua *agenda aberta* para você escolher o horário','Do corte à barba, marque quando for melhor pra você.',1,1],
+['HOJE','*Últimas vagas* de hoje','Garanta o seu antes que acabe.',3,2],
+['COMBO DA SEMANA','Corte + barba por *{oferta}*','Vagas limitadas. Agende pelo link.',2,0],
+['SEXTA-FEIRA','Sexta é dia de *ficar no talo*','Chegue no fim de semana com o visual em dia.',4,3],
+['FIM DE SEMANA','Sábado cheio? *Agende já* o seu','Quem marca antes não espera.',5,0],
+['SEM FILA','Sem fila. Sem espera. *Só agendar.*','Seu horário garantido pelo celular.',0,2],
+['HORÁRIOS','Estamos abertos *{hor}*','Escolha seu horário e venha.',1,0],
+['AVISO DE FERIADO','*Horário especial* no feriado','Confira nosso funcionamento e garanta seu horário.',2,3],
+['TRAGA UM AMIGO','Traga um amigo e *corte com estilo*','Agendem juntos pelo link e aproveitem.',4,1],
+['CLIENTE NOVO','Primeira vez? *Seja bem-vindo*','Agende seu primeiro horário em segundos.',3,0],
+['QUEM AGENDA','*Quem agenda* não espera','Seu horário reservado, sem esperar resposta no WhatsApp.',5,2],
+['SEGUNDA-FEIRA','Barba feita, *semana começada*','Comece a semana bem. Agende seu horário.',0,1],
+['PROMOÇÃO RELÂMPAGO','*{oferta}* só hoje','Corra e garanta sua vaga.',3,2],
+['ONDE ESTAMOS','Venha nos *visitar*','{end}',1,3],
+['SIGA E AGENDE','Siga *{ig}* e agende seu horário','Novidades, promoções e agenda sempre aberta.',2,0],
+['ATENDIMENTO','Atendimento *com hora marcada*','Respeito pelo seu tempo, do começo ao fim.',5,1],
+['OBRIGADO','*Obrigado* pela confiança','Cada cliente faz a nossa barbearia crescer.',4,3],
+['PRESENTEIE','Presenteie com *um corte novo*','Vale-corte: pergunte no balcão.',0,0],
+['FIM DE ANO','Fim de ano: *agenda lotando*','Garanta seu horário antes que acabe.',3,0]];
+function art(c,W,H,i,fm){const [kick,head,sub,lay,thi]=COPY[i];const base=THEMES[cfg.theme];
+ // tema escolhido pelo usuário vale para todas; variação de layout vem de lay
+ const th=base;c.save();c.fillStyle=th.bg;c.fillRect(0,0,W,H);
+ const align=lay===1?'l':'c',M=lay===1?130:110,mw=W-2*M;
+ // decoração
+ if(lay===1){c.fillStyle=th.ac;c.fillRect(70,H*.2,14,H*.6)}
+ if(lay===2){c.strokeStyle=th.ac;c.lineWidth=5;c.strokeRect(44,44,W-88,H-88);c.lineWidth=2;c.strokeRect(64,64,W-128,H-128)}
+ if(lay===3){pole(c,0,0,W,70,th);pole(c,0,H-70,W,70,th)}
+ if(lay===4){c.globalAlpha=.13;c.fillStyle=th.ac;c.beginPath();c.arc(W/2,H/2,W*.46,0,7);c.fill();c.beginPath();c.arc(W*.9,H*.1,170,0,7);c.fill();c.globalAlpha=1}
+ if(lay===5){c.fillStyle=th.ac;c.beginPath();c.moveTo(W,0);c.lineTo(W,H*.30);c.lineTo(W*.45,0);c.fill();c.globalAlpha=.5;c.beginPath();c.moveTo(0,H);c.lineTo(0,H*.8);c.lineTo(W*.4,H);c.fill();c.globalAlpha=1}
+ if(lay===0){c.fillStyle=th.ac;c.fillRect(W/2-60,H*.1,120,8)}
+ // texto
+ const hf=s=>`800 ${s}px Poppins,sans-serif`;let size=112,W1;const tk=tokens(T(head));
+ const maxLines=fm==='story'?6:4;for(;size>56;size-=6){W1=wrap(c,tk,mw,hf(size));if(W1.lines.length<=maxLines)break}
+ const lh=size*1.08,hh=W1.lines.length*lh;
+ c.font='500 40px Poppins,sans-serif';const subT=T(sub);const S=wrap(c,tokens(subT.replace(/\*/g,'')),mw,'500 40px Poppins,sans-serif');const sh=S.lines.length*58;
+ const ctaT=fm==='story'?'Link na bio':'Agende: '+linkShow();c.font='800 38px Poppins,sans-serif';const cw=Math.min(mw,c.measureText(ctaT).width+90),ch=88;
+ const logoH=logoImg?130:0,kH=44;const total=logoH+(logoH?30:0)+kH+34+hh+30+sh+56+ch;let y=Math.max(H*.12,(H-total)/2-30);
+ const ax=align==='c'?M:M;
+ if(logoImg){const lw=logoImg.width*(110/logoImg.height);const lx=align==='c'?(W-lw)/2:M;c.drawImage(logoImg,lx,y,lw,110);y+=logoH+30}
+ c.fillStyle=th.ac;c.font='800 30px Poppins,sans-serif';if('letterSpacing' in c)c.letterSpacing='7px';const kw=c.measureText(kick).width;c.fillText(kick,align==='c'?(W-kw)/2:M,y+30);if('letterSpacing' in c)c.letterSpacing='0px';y+=kH+34;
+ c.font=hf(size);drawLines(c,W1.lines,W1.sp,ax,y+size*.9,lh,align,mw,th);y+=hh+30;
+ c.font='500 40px Poppins,sans-serif';c.fillStyle=th.mu;S.lines.forEach((ln,k)=>{const t=ln.it.map(x=>x.w).join(' ');const tw=c.measureText(t).width;c.fillText(t,align==='c'?(W-tw)/2:M,y+40+k*58)});y+=sh+56;
+ c.fillStyle=th.ac;rr(c,align==='c'?(W-cw)/2:M,y,cw,ch,44);c.fill();c.fillStyle=th.on;c.font='800 38px Poppins,sans-serif';c.fillText(ctaT,(align==='c'?(W-cw)/2:M)+(cw-c.measureText(ctaT).width)/2,y+57);
+ // rodapé
+ const fy=H-(lay===3?130:96);c.fillStyle=th.fg;c.font='800 36px Poppins,sans-serif';const nm=cfg.nome||'Nome da sua barbearia';let nw=c.measureText(nm).width;c.fillText(nm,align==='c'?(W-nw)/2:M,fy);
+ const l2=[cfg.ig,cfg.wpp].filter(Boolean).join('  ·  ');if(l2){c.fillStyle=th.mu;c.font='500 28px Poppins,sans-serif';const w2=c.measureText(l2).width;c.fillText(l2,align==='c'?(W-w2)/2:M,fy+40)}
+ c.restore()}
+const dims=()=>fmt==='story'?[1080,1920]:[1080,1350];
+function renderPrev(cv,i){const [W,H]=dims();const pw=540,ph=Math.round(540*H/W);cv.width=pw;cv.height=ph;const c=cv.getContext('2d');c.setTransform(pw/W,0,0,pw/W,0,0);art(c,W,H,i,fmt)}
+function dl(cv,name){cv.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000)},'image/png')}
+function downloadArt(i){const [W,H]=dims();const cv=document.createElement('canvas');cv.width=W;cv.height=H;art(cv.getContext('2d'),W,H,i,fmt);dl(cv,`arte-${String(i+1).padStart(2,'0')}-${fmt}.png`);toast('Baixando arte '+(i+1))}
+// ---------- grid
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){renderPrev(e.target,+e.target.dataset.i);io.unobserve(e.target)}}),{rootMargin:'200px'});
+function buildGrid(){const g=$('#grid');g.innerHTML='';COPY.forEach((c,i)=>{const d=document.createElement('div');d.className='card';d.innerHTML=`<canvas data-i="${i}"></canvas><div class="m"><span>Arte ${i+1}</span><button class="btn">Baixar</button></div>`;if(i>=LIMIT)d.innerHTML+=`<div class="lock">Arte exclusiva do plano Vitalício</div>`;else d.querySelector('button').onclick=()=>downloadArt(i);g.appendChild(d);io.observe(d.querySelector('canvas'))})}
+$$('#fmt button').forEach(b=>b.onclick=()=>{fmt=b.dataset.f;$$('#fmt button').forEach(x=>x.classList.toggle('on',x===b));buildGrid()});
+// ---------- kit balcão
+function qrDraw(c,x,y,s,fg,bg,pad){const q=makeQR(fullLink());const u=s/(q.n+2*pad);c.fillStyle=bg;rr(c,x,y,s,s,u*1.2);c.fill();c.fillStyle=fg;for(let r=0;r<q.n;r++)for(let k=0;k<q.n;k++)if(q.m[r][k])c.fillRect(Math.floor(x+(k+pad)*u),Math.floor(y+(r+pad)*u),Math.ceil(u),Math.ceil(u))}
+function ctext(c,t,cx,y,font,col,ls){c.font=font;c.fillStyle=col;if('letterSpacing' in c)c.letterSpacing=(ls||0)+'px';const w=c.measureText(t).width;c.fillText(t,cx-w/2,y);if('letterSpacing' in c)c.letterSpacing='0px'}
+function wrapC(c,t,cx,y,font,col,maxW,lh){const w=wrap(c,tokens(t.replace(/\*/g,'')),maxW,font);c.font=font;c.fillStyle=col;w.lines.forEach((ln,i)=>ctext(c,ln.it.map(x=>x.w).join(' '),cx,y+i*lh,font,col));return y+w.lines.length*lh}
+const PIECES=[
+{n:'Placa de balcão A5',f:'placa-balcao-A5.png',W:1480,H:2100,d(c,W,H,th){c.fillStyle=th.bg;c.fillRect(0,0,W,H);ctext(c,'BARBEARIA · AGENDA ONLINE',W/2,170,'800 40px Poppins',th.ac,8);
+ const tk=tokens('Agende seu horário *sem esperar*');const w=wrap(c,tk,1200,'800 130px Poppins');c.font='800 130px Poppins';drawLines(c,w.lines,w.sp,140,350,140,'c',1200,th);
+ wrapC(c,'Aponte a câmera do celular e escolha serviço, barbeiro e horário numa conversa rápida.',W/2,350+w.lines.length*140+10,'500 44px Poppins',th.mu,1100,60);
+ c.fillStyle=th.ac;rr(c,290,900,900,900,60);c.fill();qrDraw(c,330,940,820,'#14110d','#ffffff',2);
+ ['Abra a câmera','Escolha o horário','Confirmado!'].forEach((t,i)=>{const x=190+i*370;c.fillStyle=th.ac;c.fillRect(x-130,1860,260,5);ctext(c,String(i+1),x,1925,'800 54px Poppins',th.ac);ctext(c,t,x,1975,'500 34px Poppins',th.fg)});
+ ctext(c,(cfg.nome||'NOME DA SUA BARBEARIA').toUpperCase(),W/2,2060,'800 44px Poppins',th.fg)}},
+{n:'Adesivo redondo (espelho)',f:'adesivo-espelho.png',W:1100,H:1100,d(c,W,H,th){c.beginPath();c.arc(550,550,540,0,7);c.fillStyle=th.bg;c.fill();c.lineWidth=18;c.strokeStyle=th.ac;c.beginPath();c.arc(550,550,520,0,7);c.stroke();
+ wrapC(c,'Agende pelo celular em 10 segundos',550,235,'800 64px Poppins',th.fg,700,76);qrDraw(c,330,400,440,'#14110d','#ffffff',1);ctext(c,'SEM APP · SEM CONTA',550,900,'600 30px Poppins',th.mu,6);ctext(c,cfg.nome||'sua barbearia',550,960,'800 36px Poppins',th.ac)}},
+{n:'Cartão de visita (frente)',f:'cartao-frente.png',W:900,H:500,d(c,W,H,th){c.fillStyle=th.bg;c.fillRect(0,0,W,H);c.textAlign='left';c.font='800 60px Poppins';c.fillStyle=th.fg;const nm=(cfg.nome||'NOME DA BARBEARIA').toUpperCase();const w=wrap(c,tokens(nm),780,'800 60px Poppins');w.lines.slice(0,2).forEach((l,i)=>{c.fillStyle=i?th.ac:th.fg;c.fillText(l.it.map(x=>x.w).join(' '),60,150+i*68)});
+ c.font='500 28px Poppins';c.fillStyle=th.mu;c.fillText('Cortes · Barba · Sobrancelha',60,310);c.fillText([cfg.ig,cfg.wpp].filter(Boolean).join(' · ')||'@seuinstagram · (00) 00000-0000',60,352);c.font='800 26px Poppins';c.fillStyle=th.ac;if('letterSpacing' in c)c.letterSpacing='6px';c.fillText('AGENDE ONLINE ›',60,430);if('letterSpacing' in c)c.letterSpacing='0px'}},
+{n:'Cartão de visita (verso)',f:'cartao-verso.png',W:900,H:500,d(c,W,H,th){c.fillStyle=th.ac;c.fillRect(0,0,W,H);qrDraw(c,50,70,360,'#14110d','#ffffff',1);c.textAlign='left';c.font='800 44px Poppins';c.fillStyle=th.on;c.fillText('Seu horário',450,200);c.fillText('na palma da mão',450,252);c.font='500 28px Poppins';wrap(c,tokens('Aponte a câmera, escolha e pronto. Sem app, sem conta.'),400,'500 28px Poppins').lines.forEach((l,i)=>c.fillText(l.it.map(x=>x.w).join(' '),450,310+i*38))}}];
+function buildKit(){const k=$('#kit');k.innerHTML='';PIECES.forEach(p=>{const d=document.createElement('div');d.className='card';const cv=document.createElement('canvas');d.appendChild(cv);const m=document.createElement('div');m.className='m';m.innerHTML=`<span>${p.n}</span><button class="btn">Baixar</button>`;d.appendChild(m);k.appendChild(d);const th=THEMES[cfg.theme];const draw=(cvs)=>{cvs.width=p.W;cvs.height=p.H;const c=cvs.getContext('2d');c.textAlign='left';p.d(c,p.W,p.H,th)};draw(cv);m.querySelector('button').onclick=()=>{const t=document.createElement('canvas');draw(t);dl(t,p.f);toast('Baixando '+p.n)}})}
+// ---------- WhatsApp
+const MSGS=[
+['Convidar clientes antigos','Fala, [nome]! Agora você marca seu horário na {nome} direto pelo celular, sem esperar resposta. É só entrar: {link}'],
+['Cliente sumido','Fala, [nome]! Faz um tempo que você não passa na {nome}. Bora renovar o visual? Escolha seu horário: {link}'],
+['Lembrete de horário','Oi, [nome]! Passando pra lembrar do seu horário amanhã às [hora] na {nome}. Se precisar remarcar, é só me avisar.'],
+['Confirmação de horário','Horário confirmado, [nome]! [dia] às [hora] com [barbeiro]. Te esperamos na {nome}. {end}'],
+['Pedir avaliação','Valeu por vir, [nome]! Se curtiu o atendimento, me ajuda com uma avaliação no Google? Leva 20 segundos: [link da avaliação]'],
+['Pedir indicação','[nome], traz um amigo! Quem indicar e agendar pelo link ganha [benefício]. {link}'],
+['Vagas de hoje','Opa! Hoje ainda tem horários livres na {nome}. Quem agendar agora garante o seu: {link}'],
+['Aviso de feriado','Aviso: no feriado de [data] a {nome} funciona das [hora] às [hora]. Garanta seu horário: {link}'],
+['Promoção da semana','Promo da semana na {nome}: {oferta}. Vagas limitadas. Agende: {link}'],
+['Primeiro contato','Oi! Aqui é da {nome}. Pra marcar é só entrar neste link e escolher serviço, barbeiro e horário: {link}'],
+['Vaga que abriu','Abriu uma vaga hoje às [hora] na {nome}. Quer? Garanta aqui: {link}'],
+['Fim de ano','Fim de ano chegando e a agenda da {nome} enchendo rápido. Garanta seu horário antes que acabe: {link}']];
+function buildWpp(){$('#wpp').innerHTML='';MSGS.forEach(([t,b])=>{const d=document.createElement('div');d.className='msg';const txt=T(b);d.innerHTML=`<b>${t}</b><p></p><button class="btn">Copiar</button> <a class="btn s" style="text-decoration:none;display:inline-block" target="_blank" rel="noopener">Abrir no WhatsApp</a>`;d.querySelector('p').textContent=txt;d.querySelector('button').onclick=()=>{navigator.clipboard.writeText(txt).then(()=>toast('Mensagem copiada'),()=>toast('Copie manualmente'))};d.querySelector('a').href='https://wa.me/?text='+encodeURIComponent(txt);$('#wpp').appendChild(d)})}
+// ---------- plano 7 dias
+const PLAN=[
+['Dia 1 · Segunda','Barba feita, semana começada',12,'Story: mostre o QR code do balcão e diga "agora você agenda pelo celular".','Segunda-feira pede barba feita e cabelo em dia. Agende seu horário sem esperar, direto pelo link: {link}'],
+['Dia 2 · Terça','Últimas vagas de hoje',2,'Story: enquete "corte ou barba hoje?" e depois mostre as vagas livres.','Ainda tem vaga hoje na {nome}. Quem agenda agora garante o horário: {link}'],
+['Dia 3 · Quarta','Combo da semana',3,'Story: antes e depois de um corte (com autorização do cliente).','Combo da semana: corte + barba por {oferta}. Vagas limitadas. Agende: {link}'],
+['Dia 4 · Quinta','Traga um amigo',9,'Story: peça para clientes marcarem um amigo e repostar.','Quinta é dia de vir acompanhado. Agendem juntos pelo link e cheguem com o visual em dia: {link}'],
+['Dia 5 · Sexta','Sexta é dia de ficar no talo',4,'Story: bastidores da barbearia na sexta cheia.','Fim de semana chegando. Garanta seu horário de sexta ou sábado: {link}'],
+['Dia 6 · Sábado','Sábado cheio? Agende já',5,'Story: contagem de vagas restantes ao longo do dia.','Sábado é o dia mais disputado da {nome}. Quem marca antes não espera: {link}'],
+['Dia 7 · Domingo','Obrigado pela confiança',17,'Story: agradeça a semana e mostre o horário de abertura de segunda.','Obrigado a todo mundo que passou pela {nome} esta semana. A agenda da próxima já está aberta: {link}']];
+function buildPlano(){const p=$('#plano');p.innerHTML='';PLAN.forEach(([d,t,ai,st,cap])=>{const el=document.createElement('div');el.className='day';const c=T(cap);const locked=ai>=LIMIT;el.innerHTML=`<h3>${d}</h3><small>Post do dia: arte ${ai+1} — ${t}${locked?' (arte exclusiva do Vitalício)':''}</small><p><b>Story:</b> ${st}</p><p><b>Legenda:</b> </p><div class="row" style="margin-top:8px"></div>`;el.querySelectorAll('p')[1].append(c);const r=el.querySelector('.row');const b1=document.createElement('button');b1.className='btn';b1.textContent='Copiar legenda';b1.onclick=()=>navigator.clipboard.writeText(c).then(()=>toast('Legenda copiada'),()=>{});r.appendChild(b1);if(!locked){const b2=document.createElement('button');b2.className='btn s';b2.textContent='Baixar arte';b2.onclick=()=>{fmt='feed';downloadArt(ai)};r.appendChild(b2)}p.appendChild(el)})}
+// ---------- abas
+const TABS=[['artes','20 Artes'],['balcao','Kit do balcão'],['wpp','Mensagens WhatsApp'],['plano','Plano de 7 dias']];
+$('#tabs').innerHTML=TABS.map(([k,t],i)=>`<button data-k="${k}" class="${i?'':'on'}">${t}</button>`).join('');
+function tab(k){$$('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.k===k));$$('.sec').forEach(s=>s.classList.toggle('on',s.id==='s_'+k))}
+$$('#tabs button').forEach(b=>b.onclick=()=>{tab(b.dataset.k);if(b.dataset.k==='balcao')buildKit()});
+let rt;function rerender(){clearTimeout(rt);rt=setTimeout(()=>{buildGrid();buildWpp();buildPlano();if($('#s_balcao').classList.contains('on'))buildKit()},250)}
+tab('artes');
+(document.fonts&&document.fonts.load?Promise.all(['500','600','800'].map(w=>document.fonts.load(w+' 40px Poppins'))):Promise.resolve()).catch(()=>{}).then(()=>{buildGrid();buildWpp();buildPlano()});
+</script></body></html>
