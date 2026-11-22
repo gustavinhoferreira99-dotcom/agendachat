@@ -485,16 +485,16 @@ async function cancelMine(t){const {data}=await sb.rpc('cancel_booking',{p_token
 $('#send').onclick=send;inp.onkeydown=e=>{if(e.key=='Enter')send()};
 
 /* ---------- DONO ---------- */
-const AUTHERR={'Invalid login credentials':'E-mail ou senha incorretos.','User already registered':'Este e-mail já tem conta. Toque em Entrar.','Email not confirmed':'Confirme seu e-mail pelo link que enviamos (olhe também o spam) e depois toque em Entrar.'};
+const AUTHERR={'Invalid login credentials':'E-mail ou senha incorretos.','User already registered':'Este e-mail já tem conta. Toque em Entrar.','Email not confirmed':'Seu acesso já está liberado. Toque em Entrar de novo.'};
 const TRACK=true,CONTATO={wa:'5584998299967',email:''};
 function track(n){try{window.gtag&&gtag('event',n)}catch(_){}return TRACK?sb.rpc('track_event',{p_name:n}).then(()=>{},()=>{}):Promise.resolve()}
 async function auth(up){if(up)track('signup_start');const bs=[$('#login'),$('#signup')];bs.forEach(b=>b.disabled=true);try{await auth0(up)}finally{bs.forEach(b=>b.disabled=false)}}
 async function auth0(up){const email=$('#em').value.trim(),password=$('#pw').value;$('#ae').textContent='';
   if(password.length<6){$('#ae').textContent='A senha precisa ter pelo menos 6 caracteres.';return}
   const r=up?await sb.auth.signUp({email,password}):await sb.auth.signInWithPassword({email,password});
-  if(r.error){$('#ae').textContent=(r.error.code=='over_email_send_rate_limit'||r.error.status==429)?'Pedidos de e-mail demais em pouco tempo. Se você já criou a conta, abra o e-mail de confirmação (veja também o spam) e depois toque em Entrar.':(AUTHERR[r.error.message]||r.error.message);return}
+  if(r.error){$('#ae').textContent=(r.error.code=='over_email_send_rate_limit'||r.error.status==429)?'Muitos pedidos em pouco tempo. Aguarde 1 minuto e tente de novo. Se você já criou a conta, toque em Entrar.':(AUTHERR[r.error.message]||r.error.message);return}
   if(up)track('signup_done');
-  if(!r.data.session){$('#ae').textContent='Conta criada. Confirme seu e-mail e depois toque em Entrar.';return}
+  if(!r.data.session){$('#ae').textContent='Conta criada! Toque em Entrar para começar.';return}
   owner()}
 async function owner(){
   const {data:{session}}=await sb.auth.getSession();if(!session){show('v-auth');return}
