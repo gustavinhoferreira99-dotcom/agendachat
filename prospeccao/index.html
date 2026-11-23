@@ -155,24 +155,23 @@ async function sendFirst(l){
   if(l.status==='nova'){await patch(l,{status:'mensagem_enviada',last_contact:new Date().toISOString(),next_contact:addDays(3)},'mensagem_enviada');toast('Marcada como "Mensagem enviada". Retorno em 3 dias.');render()}
 }
 function rHoje(){
-  const t=today();
-  const due=leads.filter(l=>l.next_contact&&l.next_contact<=t&&!['fechou','sem_interesse'].includes(l.status));
-  const novas=leads.filter(l=>l.status==='nova'&&phoneInfo(l.phone).ok&&!phoneInfo(l.phone).fixo).sort((a,b)=>(a.rating_count||0)-(b.rating_count||0)).slice(0,10);
+  const novas=leads.filter(l=>l.status==='nova'&&phoneInfo(l.phone).ok&&!phoneInfo(l.phone).fixo).sort((a,b)=>(a.rating_count||0)-(b.rating_count||0));
   const el=$('#v-hoje');
-  el.innerHTML=`<h2>Retornos de hoje (${due.length})</h2>${due.length?due.map(leadCard).join(''):'<div class="empty">Nenhum retorno para hoje.</div>'}
-  <h2>10 para começar (as menores primeiro)</h2><p class="note">Barbearias novas, com celular e menos avaliações. Um toque abre o WhatsApp com a mensagem pronta.</p>${novas.length?novas.map(leadCard).join(''):'<div class="empty">Sem barbearias novas. Veja a aba Lista.</div>'}`;
+  el.innerHTML=`<h2>Para chamar hoje (${novas.length} ainda sem mensagem)</h2><p class="note">Só barbearias que ainda não receberam mensagem, as menores primeiro. Um toque abre o WhatsApp com a mensagem pronta. Quem já foi contatado fica na aba Lista, junto com os retornos do dia.</p>${novas.length?novas.slice(0,30).map(leadCard).join(''):'<div class="empty">Todas as barbearias já foram contatadas. Peça mais ao Claude.</div>'}${novas.length>30?`<p class="note">Mostrando as 30 primeiras de ${novas.length}. As próximas aparecem conforme você envia.</p>`:''}`;
   bindCards(el)}
 function filtered(){
-  let r=leads.filter(l=>(!F.city||l.city===F.city)&&(!F.status||l.status===F.status)&&(!F.hideNo||l.status!=='sem_interesse'||F.status==='sem_interesse')&&(!F.mobile||(phoneInfo(l.phone).ok&&!phoneInfo(l.phone).fixo)));
+  let r=leads.filter(l=>l.status!=='nova'&&(!F.city||l.city===F.city)&&(!F.status||l.status===F.status)&&(!F.hideNo||l.status!=='sem_interesse'||F.status==='sem_interesse')&&(!F.mobile||(phoneInfo(l.phone).ok&&!phoneInfo(l.phone).fixo)));
   const q=F.q.trim().toLowerCase();if(q)r=r.filter(l=>(l.name+' '+(l.neighborhood||'')+' '+(l.address||'')).toLowerCase().includes(q));
   r.sort((a,b)=>F.sort==='asc'?(a.rating_count||0)-(b.rating_count||0):(b.rating_count||0)-(a.rating_count||0));return r}
 function rLista(){
   const cities=[...new Set(leads.map(l=>l.city))].sort();
   const el=$('#v-lista');
-  el.innerHTML=`<div class="filters">
+  if(F.status==='nova'){F.status='';saveF()}
+  const t=today(),due=leads.filter(l=>l.next_contact&&l.next_contact<=t&&!['fechou','sem_interesse'].includes(l.status));
+  el.innerHTML=`<h2>Retornos de hoje (${due.length})</h2><div id="ret">${due.length?due.map(leadCard).join(''):'<div class="empty">Nenhum retorno para hoje.</div>'}</div><h2>Já contatadas</h2><div class="filters">
    <input class="full" id="f-q" placeholder="Buscar por nome ou bairro" value="${esc(F.q)}">
    <select id="f-c"><option value="">Todas as cidades</option>${cities.map(c=>`<option ${F.city===c?'selected':''}>${esc(c)}</option>`).join('')}</select>
-   <select id="f-s"><option value="">Todos os status</option>${STATUS.map(([k,v])=>`<option value="${k}" ${F.status===k?'selected':''}>${v}</option>`).join('')}</select>
+   <select id="f-s"><option value="">Todos os status</option>${STATUS.filter(([k])=>k!=='nova').map(([k,v])=>`<option value="${k}" ${F.status===k?'selected':''}>${v}</option>`).join('')}</select>
    <select id="f-o"><option value="asc" ${F.sort==='asc'?'selected':''}>Menos avaliações primeiro</option><option value="desc" ${F.sort==='desc'?'selected':''}>Mais avaliações primeiro</option></select>
    <button class="btn ghost" id="f-m">${F.mobile?'✓ ':''}Só celular</button>
    <button class="btn" id="f-add">+ Adicionar barbearia</button>
@@ -183,7 +182,7 @@ function rLista(){
   $('#f-s').onchange=e=>{F.status=e.target.value;saveF();draw()};
   $('#f-o').onchange=e=>{F.sort=e.target.value;saveF();draw()};
   $('#f-m').onclick=()=>{F.mobile=!F.mobile;saveF();rLista()};
-  $('#f-add').onclick=addForm;draw()}
+  $('#f-add').onclick=addForm;bindCards($('#ret'));draw()}
 function rFunil(){
   const cnt=Object.fromEntries(STATUS.map(([k])=>[k,leads.filter(l=>l.status===k).length]));
   const contacted=leads.length-cnt.nova;
