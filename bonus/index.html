@@ -42,9 +42,10 @@ input[type=text]{width:100%;padding:10px 12px;border:1px solid var(--bd);border-
 @media print{header,.cfg,#back,#home,.toast,.sec:not(.on){display:none!important}}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:14px;font-weight:600;opacity:0;transition:.2s;pointer-events:none;z-index:9}
 .toast.on{opacity:1}
-</style></head><body><div class="w" id="gate"><header><h1>Kit de Bônus AgendaChat</h1></header><div class="cfg" id="gm"><h2>Verificando seu acesso…</h2></div></div>
+</style></head><body><div class="w" id="gate"><header><h1>Kit de Marketing para Barbearia</h1></header><div class="cfg" id="gm"><h2>Verificando seu acesso…</h2></div></div>
 <div class="w" id="app" hidden>
 <header><h1>Kit de Bônus AgendaChat</h1><p>Artes prontas, kit do balcão, mensagens de WhatsApp e plano de 7 dias. Preencha os dados da sua barbearia uma vez e tudo sai personalizado, pronto para baixar.</p><p id="planotag" style="margin-top:8px;font-weight:600"></p></header>
+<div class="cfg" id="upsell" hidden style="border:1px dashed currentColor"><h2 style="margin:0 0 6px">Ainda marca horário pelo WhatsApp?</h2><p class="hint" style="font-size:15px;margin:0 0 10px">Com o AgendaChat seu cliente agenda sozinho pelo link, sem baixar app. Use esse link no QR code do balcão e nas artes. Teste 14 dias grátis, sem cartão.</p><a class="btn" href="/?utm_source=kit&utm_medium=upsell" style="display:inline-block;text-decoration:none">Testar o AgendaChat grátis</a></div>
 
 <div class="cfg"><h2>Dados da sua barbearia</h2><p class="hint">Fica salvo neste aparelho. Nada é enviado para ninguém.</p>
 <div class="g">
@@ -130,14 +131,14 @@ function art(c,W,H,i,fm){const [kick,head,sub,lay,thi]=COPY[i];const base=THEMES
  const maxLines=fm==='story'?6:4;for(;size>56;size-=6){W1=wrap(c,tk,mw,hf(size));if(W1.lines.length<=maxLines)break}
  const lh=size*1.08,hh=W1.lines.length*lh;
  c.font='500 40px Poppins,sans-serif';const subT=T(sub);const S=wrap(c,tokens(subT.replace(/\*/g,'')),mw,'500 40px Poppins,sans-serif');const sh=S.lines.length*58;
- const ctaT=fm==='story'?'Link na bio':'Agende: '+linkShow();c.font='800 38px Poppins,sans-serif';const cw=Math.min(mw,c.measureText(ctaT).width+90),ch=88;
+ const ctaT=fm==='story'?'Link na bio':'Agende: '+linkShow();let ctaS=38;c.font='800 38px Poppins,sans-serif';while(ctaS>22&&c.measureText(ctaT).width+90>mw){ctaS-=2;c.font=`800 ${ctaS}px Poppins,sans-serif`}const ctaF=c.font;const cw=Math.min(mw,c.measureText(ctaT).width+90),ch=88;
  const logoH=logoImg?130:0,kH=44;const total=logoH+(logoH?30:0)+kH+34+hh+30+sh+56+ch;let y=Math.max(H*.12,(H-total)/2-30);
  const ax=align==='c'?M:M;
  if(logoImg){const lw=logoImg.width*(110/logoImg.height);const lx=align==='c'?(W-lw)/2:M;c.drawImage(logoImg,lx,y,lw,110);y+=logoH+30}
  c.fillStyle=th.ac;c.font='800 30px Poppins,sans-serif';if('letterSpacing' in c)c.letterSpacing='7px';const kw=c.measureText(kick).width;c.fillText(kick,align==='c'?(W-kw)/2:M,y+30);if('letterSpacing' in c)c.letterSpacing='0px';y+=kH+34;
  c.font=hf(size);drawLines(c,W1.lines,W1.sp,ax,y+size*.9,lh,align,mw,th);y+=hh+30;
  c.font='500 40px Poppins,sans-serif';c.fillStyle=th.mu;S.lines.forEach((ln,k)=>{const t=ln.it.map(x=>x.w).join(' ');const tw=c.measureText(t).width;c.fillText(t,align==='c'?(W-tw)/2:M,y+40+k*58)});y+=sh+56;
- c.fillStyle=th.ac;rr(c,align==='c'?(W-cw)/2:M,y,cw,ch,44);c.fill();c.fillStyle=th.on;c.font='800 38px Poppins,sans-serif';c.fillText(ctaT,(align==='c'?(W-cw)/2:M)+(cw-c.measureText(ctaT).width)/2,y+57);
+ c.fillStyle=th.ac;rr(c,align==='c'?(W-cw)/2:M,y,cw,ch,44);c.fill();c.fillStyle=th.on;c.font=ctaF;c.fillText(ctaT,(align==='c'?(W-cw)/2:M)+(cw-c.measureText(ctaT).width)/2,y+57);
  // rodapé
  const fy=H-(lay===3?130:96);c.fillStyle=th.fg;c.font='800 36px Poppins,sans-serif';const nm=cfg.nome||'Nome da sua barbearia';let nw=c.measureText(nm).width;c.fillText(nm,align==='c'?(W-nw)/2:M,fy);
  const l2=[cfg.ig,cfg.wpp].filter(Boolean).join('  ·  ');if(l2){c.fillStyle=th.mu;c.font='500 28px Poppins,sans-serif';const w2=c.measureText(l2).width;c.fillText(l2,align==='c'?(W-w2)/2:M,fy+40)}
@@ -202,17 +203,38 @@ $('#backb').onclick=()=>{curB=null;$('#home').hidden=false;$('#back').hidden=tru
 let rt;function rerender(){clearTimeout(rt);rt=setTimeout(()=>{if(curB&&BUILD[curB])BUILD[curB]()},250)}
 // ---------- acesso: só quem já pagou o plano
 const SUPA_URL='https://cdejbtrdfogzerqwjplz.supabase.co',SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkZWpidHJkZm9nemVycXdqcGx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQzNDYyOTMsImV4cCI6MjEwOTkyMjI5M30.Is33t606jezuVU9mgQalsWlAWWmCteXsUuA1gRQvdQc';
-function gateMsg(h,p,btn,fn){$('#gm').innerHTML=`<h2>${h}</h2><p class="hint" style="font-size:15px">${p}</p>`+(btn?`<button class="btn" id="gb">${btn}</button>`:'');if(btn)$('#gb').onclick=fn}
+function gateMsg(h,p,btn,fn,btn2,fn2){$('#gm').innerHTML=`<h2>${h}</h2><p class="hint" style="font-size:15px">${p}</p>`+(btn?`<button class="btn" id="gb">${btn}</button>`:'')+(btn2?` <button class="btn" id="gb2" style="background:transparent;color:inherit;border:1px solid currentColor">${btn2}</button>`:'');if(btn)$('#gb').onclick=fn;if(btn2)$('#gb2').onclick=fn2}
+function gateLogin(sb){
+ $('#gm').innerHTML=`<h2>Acesse seu Kit</h2><p class="hint" style="font-size:15px">Comprou o Kit de Marketing? Digite o mesmo e-mail que você usou no Mercado Pago. Vamos te enviar um link de acesso.</p>
+ <input type="email" id="kmail" placeholder="seuemail@exemplo.com" style="width:100%;margin:6px 0 10px">
+ <button class="btn" id="ksend">Receber link de acesso</button>
+ <p class="hint" id="kmsg" style="font-size:14px;margin-top:10px"></p>
+ <p class="hint" style="font-size:14px;margin-top:18px">Assina o AgendaChat? <a href="/?admin" style="color:inherit;font-weight:600">Entre pelo seu painel</a>.<br>Ainda não tem o Kit? <a href="/kit/" style="color:inherit;font-weight:600">Conheça por R$ 19,90</a>.</p>`;
+ $('#ksend').onclick=async()=>{const em=$('#kmail').value.trim().toLowerCase();if(!/^\S+@\S+\.\S+$/.test(em)){$('#kmsg').textContent='Digite um e-mail válido.';return}
+  $('#ksend').disabled=true;$('#kmsg').textContent='Enviando…';
+  try{localStorage.setItem('ag:kit','1')}catch(_){}
+  const {error}=await sb.auth.signInWithOtp({email:em,options:{shouldCreateUser:true,emailRedirectTo:location.origin+'/bonus/'}});
+  $('#ksend').disabled=false;
+  $('#kmsg').textContent=error?('Não foi possível enviar agora: '+error.message+'. Tente de novo em 1 minuto.'):'Pronto! Abra o e-mail que enviamos para '+em+' e toque no link para entrar. Veja também a caixa de spam.'};
+}
 const goPanel=plan=>{try{if(plan)localStorage.setItem('ag:plano','1')}catch(_){}location.href='/?admin'};
 async function start(){
  if(document.readyState!=='complete')await new Promise(r=>addEventListener('load',r));
  let sb;try{sb=window.supabase.createClient(SUPA_URL,SUPA_KEY)}catch(_){return gateMsg('Não foi possível verificar','Recarregue a página e tente de novo.')}
  const {data:{session}}=await sb.auth.getSession();
- if(!session)return gateMsg('Entre no seu painel','Os bônus ficam dentro do painel da sua barbearia.','Ir para o painel',()=>goPanel(false));
+ if(!session)return gateLogin(sb);
+ const {data:acc}=await sb.rpc('kit_access');
  const {data:sh}=await sb.from('shops').select('name,slug,wa,address,instagram,plan,plan_until,logo_url,services').eq('owner',session.user.id).maybeSingle();
- if(!sh)return gateMsg('Crie sua barbearia primeiro','Termine o cadastro no painel para acessar os bônus.','Ir para o painel',()=>goPanel(false));
- const pago=sh.plan==='vitalicio'||(sh.plan==='mensal'&&sh.plan_until&&new Date(sh.plan_until)>new Date());
- if(!pago)return gateMsg('Bônus liberados após o pagamento','Assine o plano Mensal ou Vitalício e o Kit de Bônus é liberado na hora, aqui no seu painel.','Ver planos',()=>goPanel(true));
+ if(acc!=='assinante'&&acc!=='kit'){
+  if(sh)return gateMsg('Bônus liberados após o pagamento','Assine o plano Mensal ou Vitalício e o Kit é liberado na hora, aqui no seu painel. Ou compre só o Kit de Marketing por R$ 19,90.','Ver planos',()=>goPanel(true),'Comprar só o Kit',()=>location.href='/kit/');
+  return gateMsg('Não encontramos sua compra','Não achamos um pagamento aprovado do Kit com o e-mail '+session.user.email+'. Se você pagou com outro e-mail no Mercado Pago, entre com ele ou fale com a gente no WhatsApp.','Falar no WhatsApp',()=>location.href='https://wa.me/5584998299967?text='+encodeURIComponent('Oi! Comprei o Kit de Marketing e não consegui acessar. Meu e-mail: '+session.user.email),'Entrar com outro e-mail',async()=>{await sb.auth.signOut();location.reload()});
+ }
+ if(acc==='kit'&&!sh){
+  plano='kit';LIMIT=20;$('#planotag').textContent='Kit de Marketing · acesso completo';
+  if(window.EXTRAS)EXTRAS.init();buildHome();
+  $('#gate').hidden=true;$('#app').hidden=false;$('#upsell').hidden=false;
+  return;
+ }
  plano=sh.plan==='vitalicio'?'vitalicio':'mensal';LIMIT=20;
  $('#planotag').textContent=(plano==='mensal'?'Seu plano: Mensal':'Seu plano: Vitalício')+' · todos os bônus liberados';
  // pré-preenche com os dados da barbearia (sem sobrescrever o que ele já editou)

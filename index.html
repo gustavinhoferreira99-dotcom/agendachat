@@ -337,6 +337,7 @@ const PAY={m:'https://mpago.la/1AGZA4N',v:'https://mpago.la/2DSXwg3'}; // links 
 /* ========================== */
 const $=s=>document.querySelector(s);
 const sb=SUPA_URL&&SUPA_KEY&&window.supabase?window.supabase.createClient(SUPA_URL,SUPA_KEY):null;
+try{if(sb&&localStorage.getItem('ag:kit')==='1')sb.auth.getSession().then(({data})=>{if(data&&data.session){localStorage.removeItem('ag:kit');location.replace('/bonus/')}})}catch(_){} // quem entrou pelo link do Kit de Marketing volta para o kit
 const q=new URLSearchParams(location.search),slug=q.get('s');
 let cfg={name:'AgendaChat',emoji:'💈',color:'#a4262c'},shop=null,uemail='',S={},cur=null,tm;
 const msgs=$('#msgs'),inp=$('#inp');
