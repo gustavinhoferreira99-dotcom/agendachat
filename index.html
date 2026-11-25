@@ -175,6 +175,12 @@ input[type=color]{width:42px;height:34px;border:1px solid var(--bd);border-radiu
 .pl2{grid-template-columns:1fr 1fr;max-width:820px}.l2-fin{padding:60px 30px}.gal{justify-content:center}}
 @media(prefers-reduced-motion:reduce){.l2.js .rv{opacity:1;transform:none}*{animation:none!important;transition:none!important}.pane{scroll-behavior:auto}}
 </style>
+<!-- Pixel da Meta (Agendachat Divulgação). Não carrega nas páginas de agendamento dos clientes das barbearias (?s=). -->
+<script>
+(function(){if(new URLSearchParams(location.search).get('s'))return;
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init','4891114447783632');fbq('track','PageView');})();
+</script>
 </head>
 <body>
 <div class="app">
@@ -497,7 +503,8 @@ $('#send').onclick=send;inp.onkeydown=e=>{if(e.key=='Enter')send()};
 /* ---------- DONO ---------- */
 const AUTHERR={'Invalid login credentials':'E-mail ou senha incorretos.','User already registered':'Este e-mail já tem conta. Toque em Entrar.','Email not confirmed':'Seu acesso já está liberado. Toque em Entrar de novo.'};
 const TRACK=true,CONTATO={wa:'5584998299967',email:''};
-function track(n){try{window.gtag&&gtag('event',n)}catch(_){}return TRACK?sb.rpc('track_event',{p_name:n}).then(()=>{},()=>{}):Promise.resolve()}
+const FBEV={cta_trial:'Lead',signup_done:'CompleteRegistration',checkout_m:'InitiateCheckout',checkout_v:'InitiateCheckout',whatsapp:'Contact'};
+function track(n){try{window.gtag&&gtag('event',n)}catch(_){}try{window.fbq&&(FBEV[n]?fbq('track',FBEV[n]):fbq('trackCustom',n))}catch(_){}return TRACK?sb.rpc('track_event',{p_name:n}).then(()=>{},()=>{}):Promise.resolve()}
 async function auth(up){if(up)track('signup_start');const bs=[$('#login'),$('#signup')];bs.forEach(b=>b.disabled=true);try{await auth0(up)}finally{bs.forEach(b=>b.disabled=false)}}
 async function auth0(up){const email=$('#em').value.trim(),password=$('#pw').value;$('#ae').textContent='';
   if(password.length<6){$('#ae').textContent='A senha precisa ter pelo menos 6 caracteres.';return}
