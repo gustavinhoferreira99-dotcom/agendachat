@@ -442,7 +442,7 @@ function ev(n){try{fetch(SB+'/rest/v1/rpc/track_event',{method:'POST',keepalive:
 try{const q=new URLSearchParams(location.search);if(q.get('utm_source'))sessionStorage.setItem('kit_utm',q.toString());if(!sessionStorage.getItem('kit_v')){sessionStorage.setItem('kit_v','1');ev('kit_view')}}catch(_){}
 let fired=false;
 document.querySelectorAll('[data-buy]').forEach(a=>a.addEventListener('click',e=>{
- if(!fired){fired=true;try{fbq('track','InitiateCheckout',{content_name:'Kit de Marketing para Barbearia',value:19.90,currency:'BRL'})}catch(_){};ev('kit_buy')}
+ if(!fired){fired=true;try{fbq('track','AddToCart',{content_name:'Kit de Marketing para Barbearia',value:19.90,currency:'BRL'})}catch(_){};ev('kit_buy')}
  e.preventDefault();pxOpen();
 }));
 // Topo com borda ao rolar e barra fixa no celular (aparece depois da primeira dobra, some na oferta e no final)
@@ -464,13 +464,13 @@ function pxShow(n){[1,2,3].forEach(k=>$px('px'+k).hidden=k!==n)}
 function pxOpen(){$px('pxm').classList.add('on');document.body.style.overflow='hidden';if(!pxId){pxShow(1);setTimeout(()=>$px('pxem').focus(),80)}}
 function pxClose(){$px('pxm').classList.remove('on');document.body.style.overflow=''}
 $px('pxx').onclick=pxClose;$px('pxm').addEventListener('click',e=>{if(e.target.id==='pxm')pxClose()});
-$px('pxcard').onclick=()=>{ev('kit_card');setTimeout(()=>{location.href=KIT_PAY},120)};
+$px('pxcard').onclick=()=>{ev('kit_card');try{fbq('track','InitiateCheckout',{content_name:'Kit de Marketing para Barbearia',value:19.90,currency:'BRL'})}catch(_){};setTimeout(()=>{location.href=KIT_PAY},120)};
 $px('pxgo').onclick=async()=>{const em=$px('pxem').value.trim();$px('pxerr').textContent='';
  if(!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(em)){$px('pxerr').textContent='Confira o e-mail.';return}
  const b=$px('pxgo');b.disabled=true;b.textContent='Gerando Pix…';
  try{const r=await fetch(PXF,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:em})});const j=await r.json();
   if(!r.ok||!j.qr)throw new Error(j.error||'erro');
-  pxId=j.id;$px('pxqr').src='data:image/png;base64,'+j.qr64;$px('pxcode').textContent=j.qr;$px('pxok').textContent=em;pxShow(2);ev('kit_pix');
+  pxId=j.id;$px('pxqr').src='data:image/png;base64,'+j.qr64;$px('pxcode').textContent=j.qr;$px('pxok').textContent=em;pxShow(2);ev('kit_pix');try{fbq('track','InitiateCheckout',{content_name:'Kit de Marketing para Barbearia',value:19.90,currency:'BRL'})}catch(_){};
   try{localStorage.setItem('kit_email',em)}catch(_){}
   clearInterval(pxT);pxT=setInterval(pxPoll,4000)}
  catch(err){$px('pxerr').textContent=(err.message&&err.message!=='erro')?err.message:'Não consegui gerar o Pix. Tente de novo ou pague pelo cartão.'}
