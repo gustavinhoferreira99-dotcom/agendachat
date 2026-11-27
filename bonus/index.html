@@ -251,4 +251,11 @@ async function start(){
 start();
 </script>
 <script src="extras.js"></script>
-<script src="catalogo.js"></script></body></html>
+<script src="catalogo.js"></script><script>
+// Link de acesso vencido (ex.: clicou num e-mail antigo): avisa e pede um novo.
+(function(){var h=location.hash+location.search;if(!/otp_expired|access_denied|link is invalid/i.test(h))return;
+var t=setInterval(function(){var m=document.getElementById('kmsg');if(!m)return;clearInterval(t);
+m.textContent='Esse link de acesso já foi usado ou venceu. Digite seu e-mail abaixo e abra só o e-mail MAIS RECENTE que chegar.';
+try{history.replaceState(null,'',location.pathname)}catch(_){}},300);setTimeout(function(){clearInterval(t)},10000)})();
+</script>
+</body></html>

@@ -476,8 +476,11 @@ $px('pxgo').onclick=async()=>{const em=$px('pxem').value.trim();$px('pxerr').tex
  catch(err){$px('pxerr').textContent=(err.message&&err.message!=='erro')?err.message:'Não consegui gerar o Pix. Tente de novo ou pague pelo cartão.'}
  finally{b.disabled=false;b.textContent='Gerar Pix de R$ 19,90'}};
 $px('pxcopy').onclick=async()=>{const c=$px('pxcode').textContent;try{await navigator.clipboard.writeText(c)}catch(_){const t=document.createElement('textarea');t.value=c;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove()}$px('pxcopy').textContent='Código copiado ✓';setTimeout(()=>$px('pxcopy').textContent='Copiar código Pix',2500)};
+
+function pxSb(){return new Promise(res=>{if(window.supabase)return res(window.supabase);const t=document.createElement('script');t.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';t.onload=()=>res(window.supabase);t.onerror=()=>res(null);document.head.appendChild(t)})}
+async function pxLogin(em,pw){try{const S=await pxSb();if(!S)return;const c=S.createClient(SB,SK);const {error}=await c.auth.signInWithPassword({email:em,password:pw});if(!error)setTimeout(()=>{location.href='/bonus/'},1500)}catch(_){}}
 async function pxPoll(){if(!pxId)return;try{const r=await fetch(PXF,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'status',id:pxId})});const j=await r.json();
- if(j.status==='approved'){clearInterval(pxT);pxShow(3);$px('pxm').classList.add('on');if(j.link){$px('pxacc').href=j.link;setTimeout(()=>{location.href=j.link},2500)}}
+ if(j.status==='approved'){clearInterval(pxT);pxShow(3);$px('pxm').classList.add('on');if(j.pw&&j.email)pxLogin(j.email,j.pw)}
  else if(j.status==='cancelled'||j.status==='rejected'){clearInterval(pxT);pxId=null;pxShow(1);$px('pxerr').textContent='O Pix expirou. Gere um novo.'}}catch(_){}}
 </script>
 </body>
