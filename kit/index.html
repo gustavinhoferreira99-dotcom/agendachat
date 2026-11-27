@@ -195,6 +195,27 @@ footer a{color:var(--mu)}
  .dm:nth-child(even) .tx{order:2}
  .bar{display:none}footer{padding-bottom:30px}
 }
+
+.pxm{position:fixed;inset:0;z-index:100;background:rgba(5,4,2,.78);display:none;align-items:flex-end;justify-content:center;padding:0}
+.pxm.on{display:flex}
+.pxb{background:var(--card);border:1px solid var(--line);border-radius:22px 22px 0 0;width:100%;max-width:440px;padding:22px 20px 26px;max-height:94vh;overflow:auto;box-shadow:0 -20px 60px rgba(0,0,0,.5)}
+@media(min-width:600px){.pxm{align-items:center}.pxb{border-radius:22px}}
+.pxb h3{margin:0 0 4px;font-size:21px}.pxb .pxs{color:var(--mu);font-size:14px;margin:0 0 14px}
+.pxr{display:flex;justify-content:space-between;align-items:center;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:14px;font-size:14px}
+.pxr b{color:var(--ac2);font-size:18px}
+.pxb label{display:block;font-size:13px;color:var(--mu);margin:0 0 6px}
+.pxb input{width:100%;box-sizing:border-box;padding:14px;border-radius:12px;border:1px solid var(--line);background:#0f0d09;color:var(--fg);font:inherit;font-size:16px}
+.pxbtn{display:block;width:100%;margin-top:12px;padding:15px;border:0;border-radius:14px;background:linear-gradient(180deg,var(--ac2),var(--ac));color:#1a1305;font:inherit;font-weight:800;font-size:16px;cursor:pointer}
+.pxbtn[disabled]{opacity:.6}
+.pxgh{background:transparent;border:1px solid var(--line);color:var(--fg);font-weight:600}
+.pxq{display:block;margin:6px auto 10px;width:220px;height:220px;background:#fff;border-radius:14px;padding:8px}
+.pxc{font-size:12px;word-break:break-all;background:#0f0d09;border:1px solid var(--line);border-radius:10px;padding:10px;color:var(--mu);max-height:70px;overflow:auto}
+.pxw{display:flex;align-items:center;gap:10px;justify-content:center;color:var(--mu);font-size:14px;margin-top:12px}
+.pxw i{width:10px;height:10px;border-radius:50%;background:var(--ac);animation:pxp 1.2s infinite}
+@keyframes pxp{50%{opacity:.25}}
+.pxn{font-size:12px;color:var(--mu2);margin:12px 0 0;text-align:center}
+.pxx{float:right;background:none;border:0;color:var(--mu);font-size:26px;line-height:1;cursor:pointer;margin:-6px -4px 0 0}
+.pxe{color:#ff8a80;font-size:13px;margin-top:8px;min-height:1em}
 </style>
 </head>
 <body>
@@ -390,6 +411,25 @@ footer a{color:var(--mu)}
 
 <footer><div class="w">Kit de Marketing para Barbearia · feito pelo <a href="/">AgendaChat</a> · <a href="/privacidade/">Privacidade</a> · <a href="https://wa.me/5584998299967">Suporte no WhatsApp</a></div></footer>
 
+
+<div class="pxm" id="pxm" role="dialog" aria-modal="true" aria-labelledby="pxt"><div class="pxb">
+ <button class="pxx" id="pxx" aria-label="Fechar">×</button>
+ <div id="px1"><h3 id="pxt">Pague com Pix</h3><p class="pxs">Aprovação na hora. O acesso é liberado no seu e-mail.</p>
+  <div class="pxr"><span>Kit de Marketing para Barbearia<br><small style="color:var(--mu2)">17 ferramentas · pagamento único</small></span><b>R$ 19,90</b></div>
+  <label for="pxe">Seu e-mail (é com ele que você acessa o kit)</label><input id="pxem" type="email" inputmode="email" autocomplete="email" placeholder="seuemail@gmail.com">
+  <div class="pxe" id="pxerr"></div>
+  <button class="pxbtn" id="pxgo">Gerar Pix de R$ 19,90</button>
+  <button class="pxbtn pxgh" id="pxcard">Prefiro pagar com cartão</button>
+  <p class="pxn">Garantia de 7 dias: se não gostar, devolvemos seu dinheiro.</p></div>
+ <div id="px2" hidden><h3>Pix gerado</h3><p class="pxs">Abra o app do seu banco e pague pelo QR Code ou pelo código "copia e cola".</p>
+  <img class="pxq" id="pxqr" alt="QR Code do Pix">
+  <div class="pxc" id="pxcode"></div>
+  <button class="pxbtn" id="pxcopy">Copiar código Pix</button>
+  <div class="pxw"><i></i><span>Aguardando o pagamento…</span></div>
+  <p class="pxn">O Pix aparece no nome de José Gustavo Ferreira Silva, responsável pelo AgendaChat. Vale por 30 minutos.</p></div>
+ <div id="px3" hidden style="text-align:center"><h3>Pagamento aprovado! ✅</h3><p class="pxs">Seu kit já está liberado. Toque abaixo, digite <b id="pxok"></b> e abra o link de acesso que chega no seu e-mail.</p>
+  <a class="pxbtn" id="pxacc" href="/bonus/" style="text-decoration:none">Acessar meu kit agora</a></div>
+</div></div>
 <div class="bar" id="bar" aria-hidden="true"><div><b>R$ 19,90</b><small>pagamento único</small></div><a class="cta" href="#oferta" data-buy="barra" tabindex="-1">Quero meu kit</a></div>
 
 <script>
@@ -403,7 +443,7 @@ try{const q=new URLSearchParams(location.search);if(q.get('utm_source'))sessionS
 let fired=false;
 document.querySelectorAll('[data-buy]').forEach(a=>a.addEventListener('click',e=>{
  if(!fired){fired=true;try{fbq('track','InitiateCheckout',{content_name:'Kit de Marketing para Barbearia',value:19.90,currency:'BRL'})}catch(_){};ev('kit_buy')}
- if(KIT_PAY){e.preventDefault();setTimeout(()=>{location.href=KIT_PAY},120)}
+ e.preventDefault();pxOpen();
 }));
 // Topo com borda ao rolar e barra fixa no celular (aparece depois da primeira dobra, some na oferta e no final)
 const top_=document.getElementById('top'),bar=document.getElementById('bar'),hero=document.querySelector('.hero .cta');
@@ -416,6 +456,29 @@ new IntersectionObserver(es=>{es.forEach(x=>{x.isIntersecting?vis.add(x.target):
 addEventListener('scroll',()=>top_.classList.toggle('sc',scrollY>8),{passive:true});
 // Animação de entrada leve
 if('IntersectionObserver' in window){const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target)}}),{rootMargin:'0px 0px -8% 0px'});document.querySelectorAll('.rv').forEach(el=>io.observe(el))}else document.querySelectorAll('.rv').forEach(el=>el.classList.add('in'));
+</script>
+<script>
+const PXF='https://cdejbtrdfogzerqwjplz.supabase.co/functions/v1/kit-pix';let pxId=null,pxT=null;
+const $px=id=>document.getElementById(id);
+function pxShow(n){[1,2,3].forEach(k=>$px('px'+k).hidden=k!==n)}
+function pxOpen(){$px('pxm').classList.add('on');document.body.style.overflow='hidden';if(!pxId){pxShow(1);setTimeout(()=>$px('pxem').focus(),80)}}
+function pxClose(){$px('pxm').classList.remove('on');document.body.style.overflow=''}
+$px('pxx').onclick=pxClose;$px('pxm').addEventListener('click',e=>{if(e.target.id==='pxm')pxClose()});
+$px('pxcard').onclick=()=>{ev('kit_card');setTimeout(()=>{location.href=KIT_PAY},120)};
+$px('pxgo').onclick=async()=>{const em=$px('pxem').value.trim();$px('pxerr').textContent='';
+ if(!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(em)){$px('pxerr').textContent='Confira o e-mail.';return}
+ const b=$px('pxgo');b.disabled=true;b.textContent='Gerando Pix…';
+ try{const r=await fetch(PXF,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:em})});const j=await r.json();
+  if(!r.ok||!j.qr)throw new Error(j.error||'erro');
+  pxId=j.id;$px('pxqr').src='data:image/png;base64,'+j.qr64;$px('pxcode').textContent=j.qr;$px('pxok').textContent=em;pxShow(2);ev('kit_pix');
+  try{localStorage.setItem('kit_email',em)}catch(_){}
+  clearInterval(pxT);pxT=setInterval(pxPoll,4000)}
+ catch(err){$px('pxerr').textContent=(err.message&&err.message!=='erro')?err.message:'Não consegui gerar o Pix. Tente de novo ou pague pelo cartão.'}
+ finally{b.disabled=false;b.textContent='Gerar Pix de R$ 19,90'}};
+$px('pxcopy').onclick=async()=>{const c=$px('pxcode').textContent;try{await navigator.clipboard.writeText(c)}catch(_){const t=document.createElement('textarea');t.value=c;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove()}$px('pxcopy').textContent='Código copiado ✓';setTimeout(()=>$px('pxcopy').textContent='Copiar código Pix',2500)};
+async function pxPoll(){if(!pxId)return;try{const r=await fetch(PXF,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'status',id:pxId})});const j=await r.json();
+ if(j.status==='approved'){clearInterval(pxT);pxShow(3);$px('pxm').classList.add('on')}
+ else if(j.status==='cancelled'||j.status==='rejected'){clearInterval(pxT);pxId=null;pxShow(1);$px('pxerr').textContent='O Pix expirou. Gere um novo.'}}catch(_){}}
 </script>
 </body>
 </html>

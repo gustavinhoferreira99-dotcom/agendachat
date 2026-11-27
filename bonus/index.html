@@ -205,7 +205,7 @@ let rt;function rerender(){clearTimeout(rt);rt=setTimeout(()=>{if(curB&&BUILD[cu
 const SUPA_URL='https://cdejbtrdfogzerqwjplz.supabase.co',SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkZWpidHJkZm9nemVycXdqcGx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQzNDYyOTMsImV4cCI6MjEwOTkyMjI5M30.Is33t606jezuVU9mgQalsWlAWWmCteXsUuA1gRQvdQc';
 function gateMsg(h,p,btn,fn,btn2,fn2){$('#gm').innerHTML=`<h2>${h}</h2><p class="hint" style="font-size:15px">${p}</p>`+(btn?`<button class="btn" id="gb">${btn}</button>`:'')+(btn2?` <button class="btn" id="gb2" style="background:transparent;color:inherit;border:1px solid currentColor">${btn2}</button>`:'');if(btn)$('#gb').onclick=fn;if(btn2)$('#gb2').onclick=fn2}
 function gateLogin(sb){
- $('#gm').innerHTML=`<h2>Acesse seu Kit</h2><p class="hint" style="font-size:15px">Comprou o Kit de Marketing? Digite o mesmo e-mail que você usou no Mercado Pago. Vamos te enviar um link de acesso.</p>
+ $('#gm').innerHTML=`<h2>Acesse seu Kit</h2><p class="hint" style="font-size:15px">Comprou o Kit de Marketing? Digite o mesmo e-mail que você usou na compra. Vamos te enviar um link de acesso.</p>
  <input type="email" id="kmail" placeholder="seuemail@exemplo.com" style="width:100%;margin:6px 0 10px">
  <button class="btn" id="ksend">Receber link de acesso</button>
  <p class="hint" id="kmsg" style="font-size:14px;margin-top:10px"></p>
@@ -227,7 +227,7 @@ async function start(){
  const {data:sh}=await sb.from('shops').select('name,slug,wa,address,instagram,plan,plan_until,logo_url,services').eq('owner',session.user.id).maybeSingle();
  if(acc!=='assinante'&&acc!=='kit'){
   if(sh)return gateMsg('Bônus liberados após o pagamento','Assine o plano Mensal ou Vitalício e o Kit é liberado na hora, aqui no seu painel. Ou compre só o Kit de Marketing por R$ 19,90.','Ver planos',()=>goPanel(true),'Comprar só o Kit',()=>location.href='/kit/');
-  return gateMsg('Não encontramos sua compra','Não achamos um pagamento aprovado do Kit com o e-mail '+session.user.email+'. Se você pagou com outro e-mail no Mercado Pago, entre com ele ou fale com a gente no WhatsApp.','Falar no WhatsApp',()=>location.href='https://wa.me/5584998299967?text='+encodeURIComponent('Oi! Comprei o Kit de Marketing e não consegui acessar. Meu e-mail: '+session.user.email),'Entrar com outro e-mail',async()=>{await sb.auth.signOut();location.reload()});
+  return gateMsg('Não encontramos sua compra','Não achamos um pagamento aprovado do Kit com o e-mail '+session.user.email+'. Se você pagou com outro e-mail, entre com ele ou fale com a gente no WhatsApp.','Falar no WhatsApp',()=>location.href='https://wa.me/5584998299967?text='+encodeURIComponent('Oi! Comprei o Kit de Marketing e não consegui acessar. Meu e-mail: '+session.user.email),'Entrar com outro e-mail',async()=>{await sb.auth.signOut();location.reload()});
  }
  if(acc==='kit'&&!sh){
   plano='kit';LIMIT=20;$('#planotag').textContent='Kit de Marketing · acesso completo';
