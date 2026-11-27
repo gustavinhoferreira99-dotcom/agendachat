@@ -427,7 +427,7 @@ footer a{color:var(--mu)}
   <button class="pxbtn" id="pxcopy">Copiar código Pix</button>
   <div class="pxw"><i></i><span>Aguardando o pagamento…</span></div>
   <p class="pxn">O Pix aparece no nome de José Gustavo Ferreira Silva, responsável pelo AgendaChat. Vale por 30 minutos.</p></div>
- <div id="px3" hidden style="text-align:center"><h3>Pagamento aprovado! ✅</h3><p class="pxs">Seu kit já está liberado. Toque abaixo, digite <b id="pxok"></b> e abra o link de acesso que chega no seu e-mail.</p>
+ <div id="px3" hidden style="text-align:center"><h3>Pagamento aprovado! ✅</h3><p class="pxs">Seu kit já está liberado e vamos abrir ele agora. Também mandamos o acesso para <b id="pxok"></b>, para você entrar depois.</p>
   <a class="pxbtn" id="pxacc" href="/bonus/" style="text-decoration:none">Acessar meu kit agora</a></div>
 </div></div>
 <div class="bar" id="bar" aria-hidden="true"><div><b>R$ 19,90</b><small>pagamento único</small></div><a class="cta" href="#oferta" data-buy="barra" tabindex="-1">Quero meu kit</a></div>
@@ -477,7 +477,7 @@ $px('pxgo').onclick=async()=>{const em=$px('pxem').value.trim();$px('pxerr').tex
  finally{b.disabled=false;b.textContent='Gerar Pix de R$ 19,90'}};
 $px('pxcopy').onclick=async()=>{const c=$px('pxcode').textContent;try{await navigator.clipboard.writeText(c)}catch(_){const t=document.createElement('textarea');t.value=c;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove()}$px('pxcopy').textContent='Código copiado ✓';setTimeout(()=>$px('pxcopy').textContent='Copiar código Pix',2500)};
 async function pxPoll(){if(!pxId)return;try{const r=await fetch(PXF,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'status',id:pxId})});const j=await r.json();
- if(j.status==='approved'){clearInterval(pxT);pxShow(3);$px('pxm').classList.add('on')}
+ if(j.status==='approved'){clearInterval(pxT);pxShow(3);$px('pxm').classList.add('on');if(j.link){$px('pxacc').href=j.link;setTimeout(()=>{location.href=j.link},2500)}}
  else if(j.status==='cancelled'||j.status==='rejected'){clearInterval(pxT);pxId=null;pxShow(1);$px('pxerr').textContent='O Pix expirou. Gere um novo.'}}catch(_){}}
 </script>
 </body>
