@@ -208,16 +208,17 @@ function gateLogin(sb){
  $('#gm').innerHTML=`<h2>Acesse seu Kit</h2><p class="hint" style="font-size:15px">Comprou o Kit de Marketing? Digite o mesmo e-mail que você usou na compra. Vamos te enviar um link de acesso.</p>
  <input type="email" id="kmail" placeholder="seuemail@exemplo.com" style="width:100%;margin:6px 0 10px">
  <button class="btn" id="ksend">Receber link de acesso</button>
- <p class="hint" id="kmsg" style="font-size:14px;margin-top:10px"></p>
+ <p class="hint" id="kmsg" style="font-size:14px;margin-top:10px">${LINK_ERR?'<b style="color:#ffb74d">Esse link de acesso já foi usado ou venceu.</b> Digite seu e-mail para receber um novo e abra só o e-mail mais recente (os antigos param de funcionar).':''}</p>
  <p class="hint" style="font-size:14px;margin-top:18px">Assina o AgendaChat? <a href="/?admin" style="color:inherit;font-weight:600">Entre pelo seu painel</a>.<br>Ainda não tem o Kit? <a href="/kit/" style="color:inherit;font-weight:600">Conheça por R$ 19,90</a>.</p>`;
  $('#ksend').onclick=async()=>{const em=$('#kmail').value.trim().toLowerCase();if(!/^\S+@\S+\.\S+$/.test(em)){$('#kmsg').textContent='Digite um e-mail válido.';return}
   $('#ksend').disabled=true;$('#kmsg').textContent='Enviando…';
   try{localStorage.setItem('ag:kit','1')}catch(_){}
   const {error}=await sb.auth.signInWithOtp({email:em,options:{shouldCreateUser:true,emailRedirectTo:location.origin+'/bonus/'}});
   $('#ksend').disabled=false;
-  $('#kmsg').textContent=error?('Não foi possível enviar agora: '+error.message+'. Tente de novo em 1 minuto.'):'Pronto! Abra o e-mail que enviamos para '+em+' e toque no link para entrar. Veja também a caixa de spam.'};
+  $('#kmsg').textContent=error?('Não foi possível enviar agora: '+error.message+'. Tente de novo em 1 minuto.'):'Pronto! Abra o e-mail que acabamos de enviar para '+em+' e toque no link. Use só o e-mail mais recente: os links antigos param de funcionar. Veja também a caixa de spam.'};
 }
 const goPanel=plan=>{try{if(plan)localStorage.setItem('ag:plano','1')}catch(_){}location.href='/?admin'};
+const LINK_ERR=/error_code=otp_expired|error=access_denied|otp_expired/.test(location.hash+location.search);
 async function start(){
  if(document.readyState!=='complete')await new Promise(r=>addEventListener('load',r));
  let sb;try{sb=window.supabase.createClient(SUPA_URL,SUPA_KEY)}catch(_){return gateMsg('Não foi possível verificar','Recarregue a página e tente de novo.')}
