@@ -37,7 +37,7 @@ textarea{min-height:120px;resize:vertical}
 .btn.sm{padding:8px 11px;font-size:14px}
 .grow{flex:1}
 nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom);z-index:6}
-nav button{flex:1;background:none;border:0;padding:12px 4px;color:var(--mute);font-weight:600;font-size:13px;cursor:pointer}
+nav button{flex:1;min-width:0;background:none;border:0;padding:10px 1px;color:var(--mute);font-weight:600;font-size:11px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 nav button.on{color:var(--coral)}
 nav button span{display:block;font-size:20px}
 .sheet{position:fixed;inset:0;background:rgba(10,12,24,.6);z-index:10;display:none;align-items:flex-end;justify-content:center}
@@ -78,6 +78,7 @@ h2{font-size:17px;margin:14px 0 6px}
     <section id="v-lista" class="hide"></section>
     <section id="v-funil" class="hide"></section>
     <section id="v-parcerias" class="hide"></section>
+    <section id="v-instagram" class="hide"></section>
     <section id="v-modelos" class="hide"></section>
     <section id="v-equipe" class="hide"></section>
   </main>
@@ -85,6 +86,7 @@ h2{font-size:17px;margin:14px 0 6px}
     <button data-v="hoje" class="on"><span>📅</span>Hoje</button>
     <button data-v="lista"><span>📋</span>Lista</button>
     <button data-v="funil"><span>📊</span>Funil</button>
+    <button data-v="instagram"><span>📸</span>Instagram</button>
     <button data-v="parcerias"><span>🤝</span>Parcerias</button>
     <button data-v="modelos"><span>✉️</span>Modelos</button>
     <button data-v="equipe" id="nav-eq" class="hide"><span>👥</span>Equipe</button>
@@ -104,7 +106,7 @@ const SN=Object.fromEntries(STATUS);
 const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const sb=window.supabase.createClient(SUPA_URL,SUPA_KEY);
-let leads=[],partners=[],PF='',tpl={},view='hoje',F={city:'',status:'',q:'',sort:'asc',mobile:false,hideNo:true};
+let leads=[],partners=[],ig=[],IGF='',PF='',tpl={},view='hoje',F={city:'',status:'',q:'',sort:'asc',mobile:false,hideNo:true};
 try{Object.assign(F,JSON.parse(localStorage.getItem('pr_f')||'{}'))}catch(_){}
 const saveF=()=>{try{localStorage.setItem('pr_f',JSON.stringify(F))}catch(_){}};
 function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2600)}
@@ -124,7 +126,7 @@ function mapsLink(l){return'https://www.google.com/maps/search/?api=1&query='+en
 async function load(){
   const [a,b]=await Promise.all([sb.from('pr_leads').select('*').order('rating_count',{ascending:true}).limit(2000),sb.from('pr_templates').select('*').order('sort')]);
   if(a.error){toast('Erro ao carregar: '+a.error.message);return}
-  const all=a.data||[];leads=all.filter(l=>l.kind!=='parceria');partners=all.filter(l=>l.kind==='parceria');tpl={};(b.data||[]).forEach(t=>tpl[t.key]=t);render()
+  const all=a.data||[];leads=all.filter(l=>l.kind==='barbearia'||!l.kind);partners=all.filter(l=>l.kind==='parceria');ig=all.filter(l=>l.kind==='instagram').sort((a,b)=>(b.created_at||'').localeCompare(a.created_at||''));tpl={};(b.data||[]).forEach(t=>tpl[t.key]=t);render()
 }
 async function patch(l,fields,ev){
   const {error}=await sb.from('pr_leads').update(fields).eq('id',l.id);
@@ -136,7 +138,7 @@ async function patch(l,fields,ev){
 // ---------- render ----------
 function render(){
   $('#sub').textContent=leads.length+' barbearias · '+new Set(leads.map(l=>l.city)).size+' cidades';
-  ({hoje:rHoje,lista:rLista,funil:rFunil,parcerias:rParcerias,modelos:rModelos,equipe:rEquipe})[view]();
+  ({hoje:rHoje,lista:rLista,funil:rFunil,parcerias:rParcerias,instagram:rInsta,modelos:rModelos,equipe:rEquipe})[view]();
 }
 function leadCard(l){
   const i=phoneInfo(l.phone);
@@ -198,7 +200,7 @@ function rFunil(){
    <h2>Por cidade</h2>${cities.map(c=>{const a=leads.filter(l=>l.city===c);return`<div class="row"><span class="grow">${esc(c)}</span><span class="meta">${a.length} na lista · ${a.filter(l=>l.status!=='nova').length} contatadas · ${a.filter(l=>l.status==='fechou').length} fecharam</span></div>`}).join('<hr style="border:0;border-top:1px solid var(--line)">')}
    <p class="note">Os números começam a fazer sentido depois de umas 30 conversas. Antes disso, são só um retrato.</p>`}
 function rModelos(){
-  const keys=['abordagem','video','retorno','video_curto','video_longo'];
+  const keys=['abordagem','video','retorno','ig_direct','video_curto','video_longo'];
   $('#v-modelos').innerHTML=`<h2>Seu nome nas mensagens</h2><div class="card"><label style="margin-top:0">Aparece em <b>{meu_nome}</b>, por exemplo "Sou o ${esc(myName||'...')}, do AgendaChat"</label><input id="my-n" value="${esc(myName)}" placeholder="Seu nome"><p><button class="btn sm" id="my-s">Salvar meu nome</button></p></div><h2>Mensagens e vídeos</h2><p class="note">Use <b>{nome}</b> para o nome da barbearia, <b>{meu_nome}</b> para o nome de quem envia e <b>{video}</b> para o link do vídeo curto. As alterações valem para todas as barbearias.</p>`+
   keys.filter(k=>tpl[k]).map(k=>`<div class="card"><b>${esc(tpl[k].title)}</b><textarea data-k="${k}" ${isAdmin?'':'readonly'} style="min-height:${k.startsWith('video_')?'60px':'130px'};margin-top:8px">${esc(tpl[k].body)}</textarea><div class="row" style="margin-top:8px">${isAdmin?`<button class="btn sm" data-s="${k}">Salvar</button>`:''}${k.startsWith('video_')?`<button class="btn ghost sm" data-c="${k}">Copiar link</button>`:''}</div>${k.startsWith('video_')?'':`<div class="meta" style="margin-top:10px">Como vai sair no WhatsApp:</div><div class="prev" data-p="${k}" style="white-space:pre-wrap;background:#e7f6ea;border:1px solid #b9e0c2;color:#12301a;border-radius:12px;padding:10px 12px;margin-top:4px;font-size:14px"></div>`}</div>`).join('');
   $('#v-modelos').insertAdjacentHTML('beforeend',`<h2>Imagens</h2><p class="note">Para enviar a uma barbearia, abra ela na lista e toque no botão da imagem. Aqui você pode ver, copiar o link, baixar ou compartilhar.</p>`+IMGS.map(([k,t])=>`<div class="card"><b>${t}</b><img src="img/${k}.jpg" alt="${t}" style="display:block;width:100%;max-width:320px;border-radius:12px;margin:8px 0"><div class="row"><button class="btn ghost sm" data-ic="${k}">Copiar link</button><a class="btn ghost sm" style="text-decoration:none" href="img/${k}.jpg" download="agendachat-${k}.jpg">Baixar</a><button class="btn sm" data-is="${k}">Compartilhar</button></div></div>`).join(''));
@@ -324,9 +326,57 @@ function pAddForm(){
   $('#pa-s').onclick=async()=>{const n=$('#pa-n').value.trim(),c=$('#pa-c').value.trim();if(!n||!c)return toast('Preencha nome e cidade');
     const row={kind:'parceria',ptype:$('#pa-t').value,name:n,city:c,neighborhood:$('#pa-b').value.trim()||null,phone:$('#pa-p').value.trim()||null,notes:$('#pa-o').value.trim()||null};
     const {data,error}=await sb.from('pr_leads').insert(row).select().single();if(error)return toast('Erro: '+error.message);partners.push(data);closeSheet();toast('Parceiro adicionado');render()}}
+
+// ---------- Instagram ----------
+const igH=h=>String(h||'').trim().replace(/^https?:\/\/(www\.)?instagram\.com\//i,'').replace(/[/?#].*$/,'').replace(/^@/,'').toLowerCase();
+function igCard(l){const i=phoneInfo(l.phone);
+  return `<div class="card" data-ig="${esc(l.id)}">
+   <div class="row"><div class="grow"><h3>@${esc(l.ig_handle)}</h3><div class="meta">${esc(l.source||'')}</div></div><span class="badge b-${esc(l.status)}">${esc(SN[l.status])}</span></div>
+   ${l.notes?`<div class="meta" style="margin:6px 0;white-space:pre-wrap">${esc(l.notes.slice(-220))}</div>`:''}
+   <div class="row"><button class="btn grow" data-a="dm">Copiar mensagem e abrir Direct</button><button class="btn ghost" data-a="perfil">Perfil</button>${i.ok&&!i.fixo?'<button class="btn wa" data-a="wa">WhatsApp</button>':''}<button class="btn ghost" data-a="open">Detalhes</button></div>
+  </div>`}
+function rInsta(){
+  const el=$('#v-instagram');const list=ig.filter(l=>!IGF||l.status===IGF);
+  const auto=ig.filter(l=>/nosso post/.test(l.source||'')).length;
+  el.innerHTML=`<h2>Leads do Instagram (${ig.length})</h2>
+  <p class="note">Quem comentou <b>AGENDA</b> ou <b>KIT</b> nos nossos Reels entra aqui sozinho e já recebe o link no Direct (${auto} até agora). Quem você achar nos comentários dos concorrentes ("quanto custa?", "tem sistema assim?"), adicione abaixo e chame pelo Direct. Telefone só se estiver público no perfil comercial.</p>
+  <div class="card"><b>Adicionar lead do Instagram</b>
+   <label>@ da pessoa ou link do perfil</label><input id="ig-h" autocapitalize="off" placeholder="@barbeariadojoao">
+   <label>Onde viu</label><input id="ig-s" placeholder="Comentou no post do @concorrente">
+   <label>O que comentou (opcional)</label><input id="ig-n" placeholder="Quanto custa? Funciona com 2 barbeiros?">
+   <label>Telefone público do perfil (opcional)</label><input id="ig-p" inputmode="tel" placeholder="(84) 99999-9999">
+   <p><button class="btn" id="ig-a" style="width:100%">Adicionar</button></p></div>
+  <div class="chips">${[['','Todos'],...STATUS].map(([k,v])=>`<button class="chip ${IGF===k?'on':''}" data-igf="${k}">${v}${k?' ('+ig.filter(l=>l.status===k).length+')':''}</button>`).join('')}</div>
+  ${list.length?list.map(igCard).join(''):'<div class="empty">Nenhum lead aqui ainda.</div>'}`;
+  el.querySelectorAll('[data-igf]').forEach(b=>b.onclick=()=>{IGF=b.dataset.igf;rInsta()});
+  $('#ig-a').onclick=async()=>{const h=igH($('#ig-h').value);if(!/^[a-z0-9._]{2,30}$/.test(h))return toast('Coloque o @ ou o link do perfil');
+    if(ig.some(l=>(l.ig_handle||'').toLowerCase()===h))return toast('@'+h+' já está na lista');
+    const row={kind:'instagram',name:'@'+h,city:'Instagram',ig_handle:h,source:$('#ig-s').value.trim()||'Comentário em concorrente',notes:$('#ig-n').value.trim()||null,phone:digits($('#ig-p').value)||null,status:'nova'};
+    const {data,error}=await sb.from('pr_leads').insert(row).select().single();if(error)return toast('Erro: '+error.message);ig.unshift(data);toast('Lead adicionado');rInsta()};
+  el.querySelectorAll('.card[data-ig]').forEach(c=>{const l=ig.find(x=>x.id===c.dataset.ig);
+    c.querySelector('[data-a=perfil]').onclick=()=>window.open('https://www.instagram.com/'+encodeURIComponent(l.ig_handle)+'/','_blank');
+    c.querySelector('[data-a=dm]').onclick=()=>igDm(l);
+    const w=c.querySelector('[data-a=wa]');if(w)w.onclick=()=>{window.open(waLink(l,fill((tpl.abordagem||{}).body,{...l,name:l.name})),'_blank')};
+    c.querySelector('[data-a=open]').onclick=()=>igSheet(l)})}
+async function igDm(l){const text=fill((tpl.ig_direct||{}).body||'',l);
+  try{await navigator.clipboard.writeText(text);toast('Mensagem copiada: cole no Direct')}catch(_){prompt('Copie a mensagem:',text)}
+  window.open('https://ig.me/m/'+encodeURIComponent(l.ig_handle),'_blank');
+  if(l.status==='nova'){await patch(l,{status:'mensagem_enviada',last_contact:new Date().toISOString(),next_contact:addDays(2)},'mensagem_enviada');rInsta()}}
+function igSheet(l){
+  $('#sheet-in').innerHTML=`<div class="row"><div class="grow"><h3 style="margin:0">@${esc(l.ig_handle)}</h3><div class="meta">${esc(l.source||'')}</div></div><button class="btn ghost sm" id="x">Fechar</button></div>
+   <h2>Status</h2><div class="chips">${STATUS.map(([k,v])=>`<button class="chip ${l.status===k?'on':''}" data-st="${k}">${v}</button>`).join('')}</div>
+   <label>Telefone (só se público no perfil)</label><input id="i-p" value="${esc(l.phone||'')}">
+   <label>Anotações</label><textarea id="i-n" style="min-height:110px">${esc(l.notes||'')}</textarea>
+   <label>Próximo contato</label><input id="i-x" type="date" value="${esc(l.next_contact||'')}">
+   <p class="row" style="margin-top:10px"><button class="btn grow" id="i-sv">Salvar</button>${isAdmin?'<button class="btn red sm" id="i-dl">Excluir</button>':''}</p>`;
+  let st=l.status;$('#sheet').classList.add('on');
+  $('#x').onclick=closeSheet;
+  $('#sheet-in').querySelectorAll('[data-st]').forEach(b=>b.onclick=()=>{st=b.dataset.st;$('#sheet-in').querySelectorAll('[data-st]').forEach(x=>x.classList.toggle('on',x===b))});
+  $('#i-sv').onclick=async()=>{if(await patch(l,{status:st,phone:digits($('#i-p').value)||null,notes:$('#i-n').value||null,next_contact:$('#i-x').value||null},st!==l.status?st:null)){closeSheet();toast('Salvo');rInsta()}};
+  const d=$('#i-dl');if(d)d.onclick=async()=>{if(!confirm('Excluir @'+l.ig_handle+'?'))return;const {error}=await sb.from('pr_leads').delete().eq('id',l.id);if(error)return toast('Erro: '+error.message);ig=ig.filter(x=>x!==l);closeSheet();rInsta()}}
 // ---------- navegação e login ----------
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{view=b.dataset.v;document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x===b));
-  ['hoje','lista','funil','parcerias','modelos','equipe'].forEach(v=>$('#v-'+v).classList.toggle('hide',v!==view));render();window.scrollTo(0,0)});
+  ['hoje','lista','funil','parcerias','instagram','modelos','equipe'].forEach(v=>$('#v-'+v).classList.toggle('hide',v!==view));render();window.scrollTo(0,0)});
 $('#sair').onclick=async()=>{await sb.auth.signOut();location.reload()};
 async function loadName(){
   let n='';
